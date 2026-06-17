@@ -140,9 +140,9 @@ function makeCloud() {
 
 // ─── FlappyGame class ─────────────────────────────────────────────────────────
 export class FlappyGame {
-  constructor(canvas, socket, initialPlayers) {
+  constructor(canvas, onFlap, initialPlayers) {
     this.canvas  = canvas;
-    this.socket  = socket;
+    this.onFlap  = onFlap;
     this.birds   = {};      // id -> { mesh, targetY, vy, alive }
     this.pipeMeshes = {};   // index -> { top, bottom }
     this.pipeData   = [];
@@ -231,10 +231,10 @@ export class FlappyGame {
     this._onKey = (e) => {
       if (e.code === 'Space' || e.code === 'ArrowUp') {
         e.preventDefault();
-        this.socket.emit('flap');
+        this.onFlap();
       }
     };
-    this._onClick = () => this.socket.emit('flap');
+    this._onClick = () => this.onFlap();
     window.addEventListener('keydown', this._onKey);
     this.canvas.addEventListener('click', this._onClick);
     this.canvas.addEventListener('touchstart', this._onClick, { passive: true });
