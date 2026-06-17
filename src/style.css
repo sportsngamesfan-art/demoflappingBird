@@ -261,6 +261,92 @@ input[type="text"].uppercase { text-transform: uppercase; letter-spacing: 4px; }
 #lb-table tr:first-child td { color: var(--yellow); font-weight: 700; }
 .lb-level { text-transform: capitalize; font-size: .8rem; background: rgba(255,255,255,.15); border-radius: 6px; padding: .15em .5em; }
 
+/* ── Home / Game Hub ──────────────────────────────── */
+.game-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.25rem;
+  width: min(520px, 92vw);
+}
+.game-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  border: 2px solid var(--card-border);
+  border-radius: 20px;
+  padding: 1.5rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: transform .18s, border-color .18s, box-shadow .18s;
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+  align-items: center;
+}
+.game-card:hover { transform: translateY(-6px); border-color: var(--yellow); box-shadow: 0 8px 28px rgba(255,215,0,.25); }
+.game-card:active { transform: translateY(-2px); }
+.game-card-icon { font-size: 3rem; }
+.game-card-title { font-family: 'Fredoka One', cursive; font-size: 1.2rem; color: var(--yellow); }
+.game-card-desc { font-size: .8rem; color: rgba(255,255,255,.6); line-height: 1.4; }
+.game-card-tag {
+  font-size: .65rem; font-weight: 700; letter-spacing: 1px;
+  background: rgba(255,255,255,.12); border-radius: 6px;
+  padding: .2em .6em; color: rgba(255,255,255,.7);
+  margin-top: .25rem;
+}
+
+/* ── Reaction Tap ─────────────────────────────────── */
+.reaction-arena {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color .12s;
+}
+.reaction-arena.waiting  { background: #2a2a3e; }
+.reaction-arena.go       { background: #1a7a1a; }
+.reaction-arena.result   { background: #1a4a7a; }
+.reaction-arena.penalty  { background: #7a1a1a; }
+
+.rt-round-counter {
+  position: absolute;
+  top: 1.2rem;
+  right: 1.5rem;
+  background: rgba(0,0,0,.4);
+  border-radius: 8px;
+  padding: .3rem .8rem;
+  font-size: .9rem;
+}
+.rt-arena-msg {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(3rem, 12vw, 6rem);
+  color: #fff;
+  text-shadow: 0 4px 20px rgba(0,0,0,.4);
+}
+.rt-last-time { font-size: 1.2rem; color: rgba(255,255,255,.75); min-height: 1.6rem; }
+
+.reaction-time-display {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(2.5rem, 10vw, 4rem);
+  color: var(--yellow);
+  text-align: center;
+  margin: .5rem 0;
+}
+.rt-round-list { display: flex; flex-direction: column; gap: .4rem; margin: .5rem 0; }
+.rt-round-row {
+  display: flex;
+  justify-content: space-between;
+  background: rgba(255,255,255,.08);
+  border-radius: 8px;
+  padding: .45rem .9rem;
+  font-size: .9rem;
+}
+.rt-round-row.rt-penalty { background: rgba(255,70,70,.15); }
+
 /* ── Utility ──────────────────────────────────────── */
 .hidden { display: none !important; }
 .muted { color: rgba(255,255,255,.55); font-size: .9rem; text-align: center; }

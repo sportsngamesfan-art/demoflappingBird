@@ -3,13 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Flappy Bird 3D Multiplayer</title>
+  <title>Social Games</title>
   <link rel="stylesheet" href="/src/style.css" />
 </head>
 <body>
 
-  <!-- ── Landing ─────────────────────────────────────── -->
-  <div id="screen-landing" class="screen active">
+  <!-- ── Home ─────────────────────────────────────────── -->
+  <div id="screen-home" class="screen">
+    <div class="title-wrap">
+      <div class="title-bird">🎮</div>
+      <h1>SOCIAL GAMES</h1>
+      <p class="subtitle">Pick a game and play with friends</p>
+    </div>
+    <div class="game-card-grid">
+      <div class="game-card" id="card-flappy">
+        <div class="game-card-icon">🐦</div>
+        <div class="game-card-title">Flappy Bird</div>
+        <div class="game-card-desc">Multiplayer party mode · Up to 6 players</div>
+        <div class="game-card-tag">MULTIPLAYER</div>
+      </div>
+      <div class="game-card" id="card-reaction">
+        <div class="game-card-icon">⚡</div>
+        <div class="game-card-title">Reaction Tap</div>
+        <div class="game-card-desc">Test your reflexes · Global leaderboard</div>
+        <div class="game-card-tag">ARCADE</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Flappy Bird Landing ───────────────────────────── -->
+  <div id="screen-landing" class="screen">
     <div class="title-wrap">
       <div class="title-bird">🐦</div>
       <h1>FLAPPY BIRD <span class="tag">3D</span></h1>
@@ -26,6 +49,7 @@
         <button id="btn-join" class="btn btn-accent">Join</button>
       </div>
       <button id="btn-leaderboard-show" class="btn btn-ghost">🏆 Leaderboard</button>
+      <button id="btn-flappy-home" class="btn btn-ghost">← All Games</button>
       <p id="landing-error" class="error-msg"></p>
     </div>
   </div>
@@ -63,7 +87,7 @@
   <div id="screen-gameover" class="screen">
     <div class="card gameover-card">
       <h2>Round Over!</h2>
-      <div id="results-list"></div>
+      <div id="results-list" class="results-list"></div>
       <div id="gameover-host-btns" class="hidden btn-row">
         <button id="btn-play-again" class="btn btn-primary">▶ Play Again</button>
         <button id="btn-back-lobby" class="btn btn-secondary">Lobby</button>
@@ -72,15 +96,67 @@
     </div>
   </div>
 
-  <!-- ── Leaderboard ───────────────────────────────────── -->
+  <!-- ── Flappy Leaderboard ────────────────────────────── -->
   <div id="screen-leaderboard" class="screen">
     <div class="card lb-card">
-      <h2>🏆 Leaderboard</h2>
+      <h2>🏆 Flappy Bird — Top Scores</h2>
       <table id="lb-table">
         <thead><tr><th>#</th><th>Player</th><th>Score</th><th>Level</th></tr></thead>
         <tbody id="lb-body"></tbody>
       </table>
       <button id="btn-lb-back" class="btn btn-ghost">← Back</button>
+    </div>
+  </div>
+
+  <!-- ── Reaction Tap Landing ──────────────────────────── -->
+  <div id="screen-reaction-landing" class="screen">
+    <div class="title-wrap">
+      <div class="title-bird">⚡</div>
+      <h1>REACTION TAP</h1>
+      <p class="subtitle">Wait for green — then tap as fast as you can!</p>
+    </div>
+    <div class="card">
+      <input id="rt-name" type="text" placeholder="Your name" maxlength="16" />
+      <button id="btn-rt-play" class="btn btn-primary btn-big">▶ Play (5 rounds)</button>
+      <button id="btn-rt-lb-show" class="btn btn-ghost">🏆 Leaderboard</button>
+      <button id="btn-rt-home" class="btn btn-ghost">← All Games</button>
+      <p id="rt-error" class="error-msg"></p>
+    </div>
+  </div>
+
+  <!-- ── Reaction Tap Game ─────────────────────────────── -->
+  <div id="screen-reaction-game" class="screen">
+    <div id="rt-arena" class="reaction-arena waiting">
+      <div id="rt-round-counter" class="rt-round-counter">Round 1 / 5</div>
+      <div id="rt-arena-msg" class="rt-arena-msg">Get ready…</div>
+      <div id="rt-last-time" class="rt-last-time"></div>
+    </div>
+  </div>
+
+  <!-- ── Reaction Tap Results ──────────────────────────── -->
+  <div id="screen-reaction-results" class="screen">
+    <div class="card gameover-card">
+      <h2>Your Results</h2>
+      <div id="rt-avg-display" class="reaction-time-display"></div>
+      <div id="rt-avg-label" class="muted" style="text-align:center;font-size:1.1rem;margin-bottom:.5rem"></div>
+      <div id="rt-round-results" class="rt-round-list"></div>
+      <div class="btn-row">
+        <button id="btn-rt-again" class="btn btn-primary">▶ Play Again</button>
+        <button id="btn-rt-share" class="btn btn-secondary">📋 Share Result</button>
+      </div>
+      <button id="btn-rt-results-home" class="btn btn-ghost">← All Games</button>
+    </div>
+  </div>
+
+  <!-- ── Reaction Tap Leaderboard ──────────────────────── -->
+  <div id="screen-reaction-lb" class="screen">
+    <div class="card lb-card">
+      <h2>⚡ Reaction Tap — Fastest Times</h2>
+      <table id="rt-lb-table">
+        <thead><tr><th>#</th><th>Player</th><th>Avg Time</th></tr></thead>
+        <tbody id="rt-lb-body"></tbody>
+      </table>
+      <button id="btn-rt-lb-back" class="btn btn-ghost">← Back</button>
     </div>
   </div>
 

@@ -1,8 +1,6 @@
-import { createClient } from '@supabase/supabase-js';
 import { FlappyGame } from './game/Game.js';
-
-const SUPABASE_URL = 'https://owqqfjyisewemtxjgexq.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_9gmatl0oDebnQsENECo0jQ_Mf8OmZZA';
+import { supabase, showScreen, genCode, hexColor, PLAYER_COLORS, RANK_MEDALS, submitScore } from './shared.js';
+import { initReactionTap } from './games/reaction-tap/reaction-tap.js';
 
 // ─── Physics constants ────────────────────────────────────────────────────────
 const GRAVITY     = 0.45;
@@ -18,11 +16,7 @@ const LEVELS = {
   hard:   { pipeSpeed: 5.0, pipeGap: 115, pipeInterval: 1400 },
 };
 
-const PLAYER_COLORS = [0xFFD700, 0xFF4455, 0x44AAFF, 0x44DD66, 0xBB44FF, 0xFF8822];
-const BIRD_EMOJIS   = ['🐦', '🐧', '🦜', '🦚', '🦉', '🦅'];
-const RANK_MEDALS   = ['🥇', '🥈', '🥉'];
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+const BIRD_EMOJIS = ['🐦', '🐧', '🦜', '🦚', '🦉', '🦅'];
 
 // ─── App state ────────────────────────────────────────────────────────────────
 const myId = crypto.randomUUID();
@@ -40,13 +34,7 @@ const lobbyPlayers = {};
 let hostState = null;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
 function setError(msg) { document.getElementById('landing-error').textContent = msg; }
-function genCode() { return Math.random().toString(36).substring(2, 6).toUpperCase(); }
-function hexColor(n) { return '#' + n.toString(16).padStart(6, '0'); }
 
 // ─── Lobby rendering ──────────────────────────────────────────────────────────
 function renderLobbyUI() {
@@ -296,7 +284,7 @@ async function hostEndGame() {
   hostState = null;
 
   const inserts = results.filter(r => r.score > 0)
-    .map(r => ({ player_name: r.name, score: r.score, level }));
+    .map(r => ({ player_name: r.name, score: r.score, level, game_name: 'flappy' }));
   if (inserts.length) supabase.from('leaderboard').insert(inserts);
 
   channel.send({ type: 'broadcast', event: 'game_over', payload: { results } });
@@ -359,19 +347,14 @@ function renderGameOver(results) {
 }
 
 // ─── Leaderboard ─────────────────────────────────────────────────────────────
-async function loadLeaderboard() {
+async function loadFlappyLeaderboard() {
   showScreen('screen-leaderboard');
-  const tbody = document.getElementById('lb-body');
-  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;opacity:.5">Loading…</td></tr>';
-  const { data, error } = await supabase
-    .from('leaderboard').select('player_name,score,level').order('score', { ascending: false }).limit(20);
-  if (error || !data?.length) {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;opacity:.5">No scores yet!</td></tr>';
-    return;
-  }
-  tbody.innerHTML = data.map((r, i) => `
-    <tr><td>${i+1}</td><td>${r.player_name}</td><td>${r.score}</td>
-    <td><span class="lb-level">${r.level}</span></td></tr>`).join('');
+  await loadLeaderboard('flappy', 'lb-body', {
+    ascending: false,
+    render: (r, i) => `
+      <tr><td>${i+1}</td><td>${r.player_name}</td><td>${r.score}</td>
+      <td><span class="lb-level">${r.level || ''}</span></td></tr>`,
+  });
 }
 
 // ─── Event listeners ──────────────────────────────────────────────────────────
@@ -397,7 +380,7 @@ document.getElementById('btn-join').addEventListener('click', async () => {
 document.getElementById('join-code').addEventListener('input', e =>
   e.target.value = e.target.value.toUpperCase());
 
-document.getElementById('btn-leaderboard-show').addEventListener('click', loadLeaderboard);
+document.getElementById('btn-leaderboard-show').addEventListener('click', loadFlappyLeaderboard);
 
 document.querySelectorAll('.lvl-btn').forEach(btn =>
   btn.addEventListener('click', () => {
@@ -410,3 +393,12 @@ document.getElementById('btn-start').addEventListener('click', hostStartGame);
 document.getElementById('btn-play-again').addEventListener('click', hostStartGame);
 document.getElementById('btn-back-lobby').addEventListener('click', () => showScreen('screen-lobby'));
 document.getElementById('btn-lb-back').addEventListener('click', () => showScreen('screen-landing'));
+document.getElementById('btn-flappy-home').addEventListener('click', () => showScreen('screen-home'));
+
+// ─── Home screen ─────────────────────────────────────────────────────────────
+document.getElementById('card-flappy').addEventListener('click', () => showScreen('screen-landing'));
+document.getElementById('card-reaction').addEventListener('click', () => showScreen('screen-reaction-landing'));
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+initReactionTap();
+showScreen('screen-home');
