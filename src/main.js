@@ -4,7 +4,7 @@ import { FlappyGame } from './game/Game.js';
 const SUPABASE_URL = 'https://owqqfjyisewemtxjgexq.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_9gmatl0oDebnQsENECo0jQ_Mf8OmZZA';
 
-// ─── Physics constants (host runs these) ─────────────────────────────────────
+// ─── Physics constants ────────────────────────────────────────────────────────
 const GRAVITY     = 0.45;
 const FLAP_FORCE  = -8.5;
 const BIRD_RADIUS = 18;
@@ -25,14 +25,19 @@ const RANK_MEDALS   = ['🥇', '🥈', '🥉'];
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ─── App state ────────────────────────────────────────────────────────────────
-const myId   = crypto.randomUUID();
-let myName   = '';
-let isHost   = false;
-let level    = 'medium';
-let channel  = null;
-let game     = null;
-let lobbyPlayers = {};  // presence state: { [id]: { name, isHost } }
-let hostState    = null; // physics, only non-null on host
+const myId = crypto.randomUUID();
+let myName = '';
+let isHost = false;
+let level  = 'medium';
+let channel = null;
+let game    = null;
+
+// Keyed by player id, populated immediately on join + updated by presence sync
+// { [id]: { name, isHost, colorIndex } }
+const lobbyPlayers = {};
+
+// Physics state — only set on the host client during a live game
+let hostState = null;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function showScreen(id) {
@@ -41,35 +46,31 @@ function showScreen(id) {
 }
 function setError(msg) { document.getElementById('landing-error').textContent = msg; }
 function genCode() { return Math.random().toString(36).substring(2, 6).toUpperCase(); }
+function hexColor(n) { return '#' + n.toString(16).padStart(6, '0'); }
 
-// ─── Lobby UI ─────────────────────────────────────────────────────────────────
-function renderLobby(presenceMap) {
-  lobbyPlayers = {};
-  for (const [id, arr] of Object.entries(presenceMap)) lobbyPlayers[id] = arr[0];
-
-  const grid = document.getElementById('lobby-players');
+// ─── Lobby rendering ──────────────────────────────────────────────────────────
+function renderLobbyUI() {
+  const grid    = document.getElementById('lobby-players');
   grid.innerHTML = '';
-  const entries = Object.entries(lobbyPlayers);
+  const entries  = Object.entries(lobbyPlayers);
+
   for (let i = 0; i < 6; i++) {
     const slot = document.createElement('div');
     if (i < entries.length) {
       const [, info] = entries[i];
-      const hex = '#' + PLAYER_COLORS[i].toString(16).padStart(6, '0');
       slot.className = 'player-slot filled';
-      slot.style.borderColor = hex;
+      slot.style.borderColor = hexColor(PLAYER_COLORS[i]);
       slot.innerHTML = `
         <div class="slot-bird">${BIRD_EMOJIS[i]}</div>
         <div class="slot-name">${info.name}</div>
-        ${info.isHost ? '<div class="slot-host">👑 Host</div>' : ''}
-      `;
+        ${info.isHost ? '<div class="slot-host">👑 Host</div>' : ''}`;
     } else {
       slot.className = 'player-slot empty';
       slot.innerHTML = `<div class="slot-bird">…</div><div class="slot-name">Open</div>`;
     }
     grid.appendChild(slot);
   }
-  document.getElementById('lobby-status').textContent =
-    `${entries.length}/6 players`;
+  document.getElementById('lobby-status').textContent = `${entries.length}/6 players`;
 }
 
 function applyLevel(l) {
@@ -78,41 +79,58 @@ function applyLevel(l) {
     b.classList.toggle('active', b.dataset.level === l));
 }
 
-// ─── Supabase Realtime channel ────────────────────────────────────────────────
+// ─── Presence helpers ─────────────────────────────────────────────────────────
+function syncPresence(presenceMap) {
+  // Rebuild lobbyPlayers from latest presence state
+  // Keep existing entries that presence hasn't seen yet (avoids flicker)
+  const seen = new Set();
+  for (const [id, arr] of Object.entries(presenceMap)) {
+    const info = arr[0];
+    if (!lobbyPlayers[id]) {
+      lobbyPlayers[id] = { name: info.name, isHost: info.isHost };
+    }
+    seen.add(id);
+  }
+  // Remove players that left
+  for (const id of Object.keys(lobbyPlayers)) {
+    if (!seen.has(id)) delete lobbyPlayers[id];
+  }
+  renderLobbyUI();
+}
+
+// ─── Channel setup ────────────────────────────────────────────────────────────
 function openChannel(code) {
   channel = supabase.channel('flappy:' + code, {
     config: {
-      broadcast: { self: false },
+      broadcast: { self: true },   // self:true so host receives own events too
       presence:  { key: myId },
     },
   });
 
-  // Presence → lobby player list
-  channel.on('presence', { event: 'sync' }, () => renderLobby(channel.presenceState()));
-
-  // Level change from host
+  channel.on('presence',  { event: 'sync' },         () => syncPresence(channel.presenceState()));
   channel.on('broadcast', { event: 'level_changed' }, ({ payload }) => applyLevel(payload.level));
-
-  // Host starts game
-  channel.on('broadcast', { event: 'game_start' }, ({ payload }) => startRendering(payload));
-
-  // Host ticks
+  channel.on('broadcast', { event: 'game_start' },    ({ payload }) => {
+    // Guests render; host already called startRendering directly
+    if (!isHost) startRendering(payload);
+  });
   channel.on('broadcast', { event: 'game_state' }, ({ payload }) => {
-    if (game) game.updateState(payload.pipes, payload.players);
-    updateHUD(payload.players);
+    // Guests update from host ticks; host updates directly in hostTick
+    if (!isHost) {
+      if (game) game.updateState(payload.pipes, payload.players);
+      updateHUD(payload.players);
+    }
   });
-
   channel.on('broadcast', { event: 'player_died' }, ({ payload }) => {
-    if (game) game.onPlayerDied(payload.id);
+    if (!isHost && game) game.onPlayerDied(payload.id);
   });
-
   channel.on('broadcast', { event: 'game_over' }, ({ payload }) => {
-    if (game) { game.destroy(); game = null; }
-    renderGameOver(payload.results);
-    showScreen('screen-gameover');
+    if (!isHost) {
+      if (game) { game.destroy(); game = null; }
+      renderGameOver(payload.results);
+      showScreen('screen-gameover');
+    }
   });
-
-  // Guest flap → host applies it
+  // Guests send flap → host applies it to physics
   channel.on('broadcast', { event: 'flap' }, ({ payload }) => {
     if (!isHost || !hostState) return;
     const p = hostState.players[payload.id];
@@ -132,22 +150,31 @@ function openChannel(code) {
 // ─── Create / Join ────────────────────────────────────────────────────────────
 async function createRoom() {
   isHost = true;
+  // Add self immediately so lobbyPlayers is never empty when host hits Start
+  lobbyPlayers[myId] = { name: myName, isHost: true };
+
   const code = genCode();
   await openChannel(code);
+
   document.getElementById('lobby-code').textContent = code;
   document.getElementById('lobby-status').textContent = `Share code: ${code}`;
   document.getElementById('lobby-host-controls').classList.remove('hidden');
   document.getElementById('lobby-guest-msg').classList.add('hidden');
   applyLevel('medium');
+  renderLobbyUI();
   showScreen('screen-lobby');
 }
 
 async function joinRoom(code) {
   isHost = false;
+  lobbyPlayers[myId] = { name: myName, isHost: false };
+
   await openChannel(code.toUpperCase());
+
   document.getElementById('lobby-code').textContent = code.toUpperCase();
   document.getElementById('lobby-host-controls').classList.add('hidden');
   document.getElementById('lobby-guest-msg').classList.remove('hidden');
+  renderLobbyUI();
   showScreen('screen-lobby');
 }
 
@@ -157,7 +184,9 @@ function buildGamePlayers() {
   let i = 0;
   for (const [id, info] of Object.entries(lobbyPlayers)) {
     out[id] = {
-      name: info.name, color: PLAYER_COLORS[i], colorIndex: i,
+      name: info.name,
+      color: PLAYER_COLORS[i % PLAYER_COLORS.length],
+      colorIndex: i,
       x: 150, y: CANVAS_H / 2, vy: 0, alive: true, score: 0,
     };
     i++;
@@ -165,7 +194,7 @@ function buildGamePlayers() {
   return out;
 }
 
-function serialize(players) {
+function serializePlayers(players) {
   const out = {};
   for (const id in players) {
     const p = players[id];
@@ -175,10 +204,13 @@ function serialize(players) {
 }
 
 async function hostStartGame() {
+  // Clean up any previous game
   if (hostState) {
     clearInterval(hostState.gameLoop);
     clearInterval(hostState.pipeTimer);
+    hostState = null;
   }
+  if (game) { game.destroy(); game = null; }
 
   const cfg     = LEVELS[level] || LEVELS.medium;
   const players = buildGamePlayers();
@@ -193,28 +225,31 @@ async function hostStartGame() {
   hostState.pipeTimer = setInterval(spawnPipe, cfg.pipeInterval);
   hostState.gameLoop  = setInterval(hostTick, 1000 / 30);
 
-  const payload = { level, players: serialize(players) };
-  await channel.send({ type: 'broadcast', event: 'game_start', payload });
-  startRendering(payload); // host renders locally too
+  // Tell guests to start rendering
+  const payload = { level, players: serializePlayers(players) };
+  channel.send({ type: 'broadcast', event: 'game_start', payload });
+
+  // Host starts rendering immediately
+  startRendering(payload);
 }
 
 function hostTick() {
   if (!hostState || hostState.ended) return;
-  const { players, cfg } = hostState;
+  const { players, pipes, cfg } = hostState;
 
-  for (const pipe of hostState.pipes) pipe.x -= cfg.pipeSpeed;
-  hostState.pipes = hostState.pipes.filter(p => p.x > -PIPE_WIDTH - 20);
+  for (const pipe of pipes) pipe.x -= cfg.pipeSpeed;
+  hostState.pipes = pipes.filter(p => p.x > -PIPE_WIDTH - 20);
 
   for (const id in players) {
     const p = players[id];
     if (!p.alive) continue;
+
     p.vy += GRAVITY;
     p.y  += p.vy;
 
     if (p.y >= CANVAS_H - BIRD_RADIUS || p.y <= BIRD_RADIUS) {
       p.alive = false;
       channel.send({ type: 'broadcast', event: 'player_died', payload: { id } });
-      if (game) game.onPlayerDied(id);
       continue;
     }
 
@@ -224,7 +259,6 @@ function hostTick() {
       if (inX && inY) {
         p.alive = false;
         channel.send({ type: 'broadcast', event: 'player_died', payload: { id } });
-        if (game) game.onPlayerDied(id);
         break;
       }
       if (!pipe.passed.has(id) && pipe.x + PIPE_WIDTH < p.x) {
@@ -236,10 +270,13 @@ function hostTick() {
 
   const statePayload = {
     pipes:   hostState.pipes.map(p => ({ x: p.x, gapY: p.gapY, gap: p.gap })),
-    players: serialize(players),
+    players: serializePlayers(players),
   };
+
+  // Send to guests
   channel.send({ type: 'broadcast', event: 'game_state', payload: statePayload });
-  // host updates own render
+
+  // Host updates own renderer directly
   if (game) game.updateState(statePayload.pipes, statePayload.players);
   updateHUD(statePayload.players);
 
@@ -255,22 +292,22 @@ async function hostEndGame() {
   const results = Object.values(hostState.players)
     .map(p => ({ name: p.name, score: p.score, color: p.color }))
     .sort((a, b) => b.score - a.score);
+  hostState = null;
 
   const inserts = results.filter(r => r.score > 0)
     .map(r => ({ player_name: r.name, score: r.score, level }));
-  if (inserts.length) await supabase.from('leaderboard').insert(inserts);
+  if (inserts.length) supabase.from('leaderboard').insert(inserts);
 
-  await channel.send({ type: 'broadcast', event: 'game_over', payload: { results } });
+  channel.send({ type: 'broadcast', event: 'game_over', payload: { results } });
+
   if (game) { game.destroy(); game = null; }
   renderGameOver(results);
   showScreen('screen-gameover');
-  hostState = null;
 }
 
 // ─── Flap ─────────────────────────────────────────────────────────────────────
 function sendFlap() {
   if (isHost && hostState) {
-    // Apply directly to physics
     const p = hostState.players[myId];
     if (p?.alive) p.vy = FLAP_FORCE;
   } else {
@@ -278,7 +315,7 @@ function sendFlap() {
   }
 }
 
-// ─── Rendering ────────────────────────────────────────────────────────────────
+// ─── Game rendering ───────────────────────────────────────────────────────────
 function startRendering({ level: l, players }) {
   showScreen('screen-game');
   const hint = document.getElementById('flap-hint');
@@ -297,10 +334,9 @@ function updateHUD(players) {
   const container = document.getElementById('hud-scores');
   container.innerHTML = '';
   Object.values(players).sort((a, b) => b.score - a.score).forEach(p => {
-    const hex = '#' + p.color.toString(16).padStart(6, '0');
     const div = document.createElement('div');
     div.className = 'hud-player' + (p.alive ? '' : ' hud-dead');
-    div.innerHTML = `<span class="hud-dot" style="background:${hex}"></span>${p.name}: ${p.score}`;
+    div.innerHTML = `<span class="hud-dot" style="background:${hexColor(p.color)}"></span>${p.name}: ${p.score}`;
     container.appendChild(div);
   });
 }
@@ -309,14 +345,12 @@ function renderGameOver(results) {
   const list = document.getElementById('results-list');
   list.innerHTML = '';
   results.forEach((r, i) => {
-    const hex = '#' + r.color.toString(16).padStart(6, '0');
     const div = document.createElement('div');
     div.className = 'result-row';
     div.innerHTML = `
       <span class="result-rank ${['gold','silver','bronze'][i]||''}">${RANK_MEDALS[i]||`${i+1}.`}</span>
-      <span class="result-name" style="color:${hex}">${r.name}</span>
-      <span class="result-score">${r.score} pts</span>
-    `;
+      <span class="result-name" style="color:${hexColor(r.color)}">${r.name}</span>
+      <span class="result-score">${r.score} pts</span>`;
     list.appendChild(div);
   });
   document.getElementById('gameover-host-btns').classList.toggle('hidden', !isHost);
@@ -329,7 +363,7 @@ async function loadLeaderboard() {
   const tbody = document.getElementById('lb-body');
   tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;opacity:.5">Loading…</td></tr>';
   const { data, error } = await supabase
-    .from('leaderboard').select('player_name,score,level').order('score',{ascending:false}).limit(20);
+    .from('leaderboard').select('player_name,score,level').order('score', { ascending: false }).limit(20);
   if (error || !data?.length) {
     tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;opacity:.5">No scores yet!</td></tr>';
     return;
