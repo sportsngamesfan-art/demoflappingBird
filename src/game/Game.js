@@ -195,8 +195,8 @@ export class FlappyGame {
   _initScene() {
     const { left, right, top, bottom } = this._camParams || { left: 0, right: CANVAS_W, top: CANVAS_H, bottom: 0 };
     this.camera = new THREE.OrthographicCamera(left, right, top, bottom, -1000, 1000);
-    this.camera.position.set(CANVAS_W / 2, CANVAS_H / 2, 500);
-    this.camera.lookAt(CANVAS_W / 2, CANVAS_H / 2, 0);
+    this.camera.position.set(0, 0, 500);
+    this.camera.lookAt(0, 0, 0);
 
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x87CEEB);
@@ -215,7 +215,7 @@ export class FlappyGame {
     for (const id in players) {
       const p = players[id];
       const mesh = makeBird(p.color);
-      mesh.position.set(p.x, p.y, 0);
+      mesh.position.set(p.x, CANVAS_H - p.y, 0);
       this.scene.add(mesh);
       this.birds[id] = {
         mesh,
@@ -260,7 +260,7 @@ export class FlappyGame {
     for (const id in this.birds) {
       const b = this.birds[id];
       // Lerp toward server position
-      b.mesh.position.y += (b.targetY - b.mesh.position.y) * 0.25;
+      b.mesh.position.y += ((CANVAS_H - b.targetY) - b.mesh.position.y) * 0.25;
       b.mesh.position.x += (b.targetX - b.mesh.position.x) * 0.25;
 
       // Tilt based on velocity
@@ -283,7 +283,7 @@ export class FlappyGame {
       if (!this.birds[id]) {
         // Late-join: add bird
         const mesh = makeBird(p.color);
-        mesh.position.set(p.x, p.y, 0);
+        mesh.position.set(p.x, CANVAS_H - p.y, 0);
         this.scene.add(mesh);
         this.birds[id] = { mesh, targetX: p.x, targetY: p.y, alive: p.alive, vy: p.vy || 0 };
       } else {
