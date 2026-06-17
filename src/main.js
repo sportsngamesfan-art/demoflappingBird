@@ -187,6 +187,7 @@ function buildGamePlayers() {
       name: info.name,
       color: PLAYER_COLORS[i % PLAYER_COLORS.length],
       colorIndex: i,
+      emoji: BIRD_EMOJIS[i % BIRD_EMOJIS.length],
       x: 150, y: CANVAS_H / 2, vy: 0, alive: true, score: 0,
     };
     i++;
@@ -198,7 +199,7 @@ function serializePlayers(players) {
   const out = {};
   for (const id in players) {
     const p = players[id];
-    out[id] = { name: p.name, color: p.color, x: p.x, y: p.y, vy: p.vy, alive: p.alive, score: p.score };
+    out[id] = { name: p.name, color: p.color, emoji: p.emoji, x: p.x, y: p.y, vy: p.vy, alive: p.alive, score: p.score };
   }
   return out;
 }
