@@ -1,0 +1,21 @@
+{
+  "name": "flappy-bird-multiplayer",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "concurrently \"node server.js\" \"vite --port 5173\"",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "concurrently": "^8.2.2",
+    "express": "^4.18.2",
+    "socket.io": "^4.6.2",
+    "socket.io-client": "^4.6.2",
+    "three": "^0.161.0"
+  },
+  "devDependencies": {
+    "vite": "^5.0.12"
+  }
+}
