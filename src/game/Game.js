@@ -69,23 +69,24 @@ function darken(hex, factor) {
 // ─── Pipe mesh factory ────────────────────────────────────────────────────────
 function makePipePair(scene) {
   const mat    = new THREE.MeshLambertMaterial({ color: 0x3CB043 });
-  const capMat = new THREE.MeshLambertMaterial({ color: 0x2E8B57 });
+  const capMat = new THREE.MeshLambertMaterial({ color: 0x228B22 });
+  const capGeo = new THREE.BoxGeometry(PIPE_W + 12, 24, 54);
+  const bodyGeo = new THREE.BoxGeometry(PIPE_W, 1, 46);
 
-  function makePipe(height) {
+  function makePipe() {
     const group = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.BoxGeometry(PIPE_W, height, 46), mat);
-    group.add(body);
-    const cap = new THREE.Mesh(new THREE.BoxGeometry(PIPE_W + 10, 20, 52), capMat);
-    cap.position.y = height / 2 - 10;
-    group.add(cap);
+    group.add(new THREE.Mesh(bodyGeo, mat));
     return group;
   }
 
-  const top    = makePipe(1);
-  const bottom = makePipe(1);
-  scene.add(top);
-  scene.add(bottom);
-  return { top, bottom };
+  const top       = makePipe();
+  const topCap    = new THREE.Mesh(capGeo, capMat);
+  const bottom    = makePipe();
+  const bottomCap = new THREE.Mesh(capGeo, capMat);
+
+  scene.add(top);    scene.add(topCap);
+  scene.add(bottom); scene.add(bottomCap);
+  return { top, topCap, bottom, bottomCap };
 }
 
 // ─── Background ───────────────────────────────────────────────────────────────
@@ -129,8 +130,8 @@ function buildBackground(scene) {
 
 function makeCloud() {
   const group = new THREE.Group();
-  const mat = new THREE.MeshLambertMaterial({ color: 0xFFFFFF });
-  [[0,0,0,50,28,30],[30,8,0,40,24,28],[-28,6,0,38,22,26],[18,-8,0,34,20,24]].forEach(([x,y,z,w,h,d]) => {
+  const mat = new THREE.MeshBasicMaterial({ color: 0xF0F8FF });
+  [[0,0,0,60,32,30],[36,10,0,48,26,28],[-34,8,0,44,24,26],[20,-10,0,38,22,24]].forEach(([x,y,z,w,h,d]) => {
     const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat);
     m.position.set(x,y,z);
     group.add(m);
@@ -202,9 +203,9 @@ export class FlappyGame {
     this.scene.background = new THREE.Color(0x87CEEB);
 
     // Lighting
-    const ambient = new THREE.AmbientLight(0xffffff, 0.7);
+    const ambient = new THREE.AmbientLight(0xffffff, 1.0);
     this.scene.add(ambient);
-    const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
     dirLight.position.set(300, 600, 400);
     this.scene.add(dirLight);
 
@@ -305,8 +306,9 @@ export class FlappyGame {
     const existingKeys = Object.keys(this.pipeMeshes).map(Number);
     for (const k of existingKeys) {
       if (k >= neededCount) {
-        this.scene.remove(this.pipeMeshes[k].top);
-        this.scene.remove(this.pipeMeshes[k].bottom);
+        const m = this.pipeMeshes[k];
+        this.scene.remove(m.top); this.scene.remove(m.topCap);
+        this.scene.remove(m.bottom); this.scene.remove(m.bottomCap);
         delete this.pipeMeshes[k];
       }
     }
@@ -316,30 +318,32 @@ export class FlappyGame {
       const pipe = pipes[i];
       const topHeight    = pipe.gapY;
       const bottomHeight = CANVAS_H - (pipe.gapY + pipe.gap);
+      const cx = pipe.x + PIPE_W / 2;
 
       if (!this.pipeMeshes[i]) {
         this.pipeMeshes[i] = makePipePair(this.scene);
       }
 
-      const { top, bottom } = this.pipeMeshes[i];
+      const { top, topCap, bottom, bottomCap } = this.pipeMeshes[i];
 
       // Top pipe (hangs from top)
       if (topHeight > 0) {
-        top.visible = true;
-        // Rebuild geometry if height changed (simple approach: scale)
+        top.visible = topCap.visible = true;
         top.scale.y = topHeight;
-        top.position.set(pipe.x + PIPE_W / 2, CANVAS_H - topHeight / 2, 0);
+        top.position.set(cx, CANVAS_H - topHeight / 2, 0);
+        topCap.position.set(cx, CANVAS_H - topHeight, 0);  // cap at open (bottom) end
       } else {
-        top.visible = false;
+        top.visible = topCap.visible = false;
       }
 
       // Bottom pipe
       if (bottomHeight > 0) {
-        bottom.visible = true;
+        bottom.visible = bottomCap.visible = true;
         bottom.scale.y = bottomHeight;
-        bottom.position.set(pipe.x + PIPE_W / 2, bottomHeight / 2, 0);
+        bottom.position.set(cx, bottomHeight / 2, 0);
+        bottomCap.position.set(cx, bottomHeight, 0);  // cap at open (top) end
       } else {
-        bottom.visible = false;
+        bottom.visible = bottomCap.visible = false;
       }
     }
   }
@@ -356,6 +360,11 @@ export class FlappyGame {
     cancelAnimationFrame(this.animId);
     window.removeEventListener('keydown', this._onKey);
     window.removeEventListener('resize', this._onResize);
+    for (const k of Object.keys(this.pipeMeshes)) {
+      const m = this.pipeMeshes[k];
+      this.scene.remove(m.top); this.scene.remove(m.topCap);
+      this.scene.remove(m.bottom); this.scene.remove(m.bottomCap);
+    }
     this.canvas.removeEventListener('click', this._onClick);
     this.canvas.removeEventListener('touchstart', this._onClick);
     this.renderer.dispose();
