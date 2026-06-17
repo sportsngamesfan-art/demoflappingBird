@@ -7,7 +7,7 @@ const SUPABASE_KEY = 'sb_publishable_9gmatl0oDebnQsENECo0jQ_Mf8OmZZA';
 // ─── Physics constants ────────────────────────────────────────────────────────
 const GRAVITY     = 0.45;
 const FLAP_FORCE  = -8.5;
-const BIRD_RADIUS = 18;
+const BIRD_RADIUS = 14;
 const CANVAS_W    = 800;
 const CANVAS_H    = 600;
 const PIPE_WIDTH  = 60;
