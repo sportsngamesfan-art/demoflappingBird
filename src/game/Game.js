@@ -32,7 +32,7 @@ function makeEmojiSprite(emoji, color) {
   const texture = new THREE.CanvasTexture(canvas);
   const material = new THREE.SpriteMaterial({ map: texture, depthTest: false });
   const sprite = new THREE.Sprite(material);
-  sprite.scale.set(52, 52, 1);
+  sprite.scale.set(34, 34, 1);
   return sprite;
 }
 
