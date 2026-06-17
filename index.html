@@ -28,6 +28,12 @@
         <div class="game-card-desc">Test your reflexes · Global leaderboard</div>
         <div class="game-card-tag">ARCADE</div>
       </div>
+      <div class="game-card" id="card-shooter">
+        <div class="game-card-icon">🔫</div>
+        <div class="game-card-title">Shooter</div>
+        <div class="game-card-desc">Co-op run &amp; gun · 1–2 players</div>
+        <div class="game-card-tag">CO-OP</div>
+      </div>
     </div>
   </div>
 
@@ -157,6 +163,83 @@
         <tbody id="rt-lb-body"></tbody>
       </table>
       <button id="btn-rt-lb-back" class="btn btn-ghost">← Back</button>
+    </div>
+  </div>
+
+  <!-- ── Shooter Landing ───────────────────────────────── -->
+  <div id="screen-shooter-landing" class="screen">
+    <div class="title-wrap">
+      <div class="title-bird">🔫</div>
+      <h1>SHOOTER</h1>
+      <p class="subtitle">Run, jump, and blast enemies — solo or co-op!</p>
+    </div>
+    <div class="card">
+      <input id="sh-name" type="text" placeholder="Your name" maxlength="16" />
+      <button id="btn-sh-solo" class="btn btn-primary btn-big">▶ Solo</button>
+      <div class="btn-row">
+        <button id="btn-sh-coop" class="btn btn-accent">👥 Create Co-op</button>
+        <button id="btn-sh-join-show" class="btn btn-secondary">Join Room</button>
+      </div>
+      <div id="sh-join-form" class="hidden">
+        <input id="sh-join-code" type="text" placeholder="Room code (e.g. AB12)" maxlength="4" />
+        <button id="btn-sh-join" class="btn btn-accent">Join</button>
+      </div>
+      <button id="btn-sh-lb-show" class="btn btn-ghost">🏆 Leaderboard</button>
+      <button id="btn-sh-home" class="btn btn-ghost">← All Games</button>
+      <p id="sh-error" class="error-msg"></p>
+    </div>
+  </div>
+
+  <!-- ── Shooter Lobby ──────────────────────────────────── -->
+  <div id="screen-shooter-lobby" class="screen">
+    <div class="lobby-header">
+      <h2>Room <span id="sh-lobby-code" class="code-badge"></span></h2>
+      <p id="sh-lobby-status">Waiting for players…</p>
+    </div>
+    <div id="sh-lobby-players" class="player-grid" style="grid-template-columns:repeat(2,1fr);max-width:320px"></div>
+    <div id="sh-lobby-host-controls" class="hidden">
+      <button id="btn-sh-start" class="btn btn-primary btn-big">▶ Start Game</button>
+    </div>
+    <p id="sh-lobby-guest-msg" class="hidden muted">Waiting for host to start…</p>
+    <button id="btn-sh-lobby-home" class="btn btn-ghost">← All Games</button>
+  </div>
+
+  <!-- ── Shooter Game ───────────────────────────────────── -->
+  <div id="screen-shooter-game" class="screen">
+    <canvas id="sh-canvas"></canvas>
+    <div class="sh-touch-controls">
+      <div style="display:flex;gap:.5rem">
+        <button class="sh-touch-btn" data-action="left">◀</button>
+        <button class="sh-touch-btn" data-action="right">▶</button>
+      </div>
+      <div style="display:flex;gap:.5rem">
+        <button class="sh-touch-btn" data-action="jump">↑</button>
+        <button class="sh-touch-btn" data-action="shoot">🔫</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Shooter Game Over ─────────────────────────────── -->
+  <div id="screen-shooter-gameover" class="screen">
+    <div class="card gameover-card">
+      <h2>Game Over!</h2>
+      <div id="sh-results-list" class="results-list"></div>
+      <div class="btn-row">
+        <button id="btn-sh-restart" class="btn btn-primary">▶ Restart</button>
+        <button id="btn-sh-gameover-home" class="btn btn-ghost">← All Games</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Shooter Leaderboard ───────────────────────────── -->
+  <div id="screen-shooter-lb" class="screen">
+    <div class="card lb-card">
+      <h2>🔫 Shooter — Top Scores</h2>
+      <table id="sh-lb-table">
+        <thead><tr><th>#</th><th>Player</th><th>Score</th></tr></thead>
+        <tbody id="sh-lb-body"></tbody>
+      </table>
+      <button id="btn-sh-lb-back" class="btn btn-ghost">← Back</button>
     </div>
   </div>
 

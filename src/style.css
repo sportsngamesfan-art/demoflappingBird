@@ -347,6 +347,40 @@ input[type="text"].uppercase { text-transform: uppercase; letter-spacing: 4px; }
 }
 .rt-round-row.rt-penalty { background: rgba(255,70,70,.15); }
 
+/* ── Shooter ──────────────────────────────────────── */
+#screen-shooter-game {
+  padding: 0;
+  background: #000;
+  position: relative;
+}
+#sh-canvas {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}
+.sh-touch-controls {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 0; right: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  pointer-events: none;
+}
+.sh-touch-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.15);
+  border: 2px solid rgba(255,255,255,.3);
+  color: #fff;
+  font-size: 1.3rem;
+  pointer-events: all;
+  cursor: pointer;
+  user-select: none;
+  touch-action: none;
+}
+
 /* ── Utility ──────────────────────────────────────── */
 .hidden { display: none !important; }
 .muted { color: rgba(255,255,255,.55); font-size: .9rem; text-align: center; }
