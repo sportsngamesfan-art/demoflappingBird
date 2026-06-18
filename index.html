@@ -31,6 +31,39 @@
     </div>
   </div>
 
+  <!-- ── Create Room Modal ────────────────────────────── -->
+  <div id="create-room-modal" class="qm-modal hidden">
+    <div class="qm-card">
+      <h2 class="qm-title">Create Room</h2>
+      <p class="qm-subtitle">Choose a game to host</p>
+      <div class="qm-game-grid">
+        <button class="qm-game-btn" data-game="flappy"><span class="qm-icon">🐦</span><span class="qm-label">Flappy Bird</span></button>
+        <button class="qm-game-btn" data-game="reaction"><span class="qm-icon">⚡</span><span class="qm-label">Reaction Tap</span></button>
+        <button class="qm-game-btn" data-game="shooter"><span class="qm-icon">🔫</span><span class="qm-label">Shooter</span></button>
+        <button class="qm-game-btn" data-game="pacman"><span class="qm-icon">👻</span><span class="qm-label">Pac-Man</span></button>
+      </div>
+      <div id="create-room-result" class="qm-result hidden">
+        <p class="qm-code-label">Room Code</p>
+        <div class="qm-code-display" id="create-room-code"></div>
+        <button class="btn btn-accent qm-copy-btn" id="create-room-copy">📋 Copy Invite Link</button>
+        <button class="btn btn-primary qm-goto-btn" id="create-room-goto">▶ Go to Lobby</button>
+      </div>
+      <button class="btn btn-ghost qm-close" id="create-room-close">✕ Close</button>
+    </div>
+  </div>
+
+  <!-- ── Join Room Modal ───────────────────────────────── -->
+  <div id="join-room-modal" class="qm-modal hidden">
+    <div class="qm-card">
+      <h2 class="qm-title">Join Room</h2>
+      <p class="qm-subtitle">Enter the 4-letter room code</p>
+      <input type="text" id="qm-join-code" class="uppercase" placeholder="ABCD" maxlength="4" />
+      <p id="qm-join-error" class="error-msg"></p>
+      <button class="btn btn-primary btn-big" id="qm-join-btn">▶ Join</button>
+      <button class="btn btn-ghost qm-close" id="join-room-close">✕ Close</button>
+    </div>
+  </div>
+
   <!-- ── Home ─────────────────────────────────────────── -->
   <div id="screen-home" class="screen">
     <canvas id="home-bg-canvas"></canvas>

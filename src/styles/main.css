@@ -632,3 +632,49 @@ input[type="text"].uppercase { text-transform: uppercase; letter-spacing: 4px; }
 }
 .activity-dot { width:7px; height:7px; border-radius:50%; background:#4CAF50; flex-shrink:0; }
 .activity-dot.away { background:#FFD700; }
+
+/* ── Quick-action Modals ──────────────────────────── */
+.qm-modal {
+  position: fixed; inset: 0; z-index: 1500;
+  background: rgba(0,0,0,.72); backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+}
+.qm-modal.hidden { display: none; }
+.qm-card {
+  background: #1a1a2e; border: 1px solid rgba(255,255,255,.18);
+  border-radius: 22px; padding: 2rem 2rem 1.5rem;
+  width: min(400px, 94vw);
+  display: flex; flex-direction: column; gap: .9rem; align-items: center;
+  animation: fadeIn .25s ease;
+}
+.qm-title { font-family:'Fredoka One',cursive; font-size:1.6rem; color:var(--yellow); margin:0; }
+.qm-subtitle { color:rgba(255,255,255,.55); font-size:.88rem; margin:-.4rem 0 .2rem; text-align:center; }
+
+/* Equal-size game grid */
+.qm-game-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: .7rem; width: 100%;
+}
+.qm-game-btn {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: .35rem; padding: .8rem .3rem;
+  background: rgba(255,255,255,.07); border: 1.5px solid rgba(255,255,255,.12);
+  border-radius: 14px; cursor: pointer; transition: all .18s;
+  aspect-ratio: 1; /* keeps all tiles square & equal */
+}
+.qm-game-btn:hover { background:rgba(255,255,255,.15); border-color:var(--yellow); transform:scale(1.06); }
+.qm-game-btn.selected { border-color:var(--yellow); background:rgba(255,215,0,.12); box-shadow:0 0 14px rgba(255,215,0,.25); }
+.qm-icon { font-size: 2rem; line-height: 1; }
+.qm-label { font-size: .68rem; font-weight: 700; color: rgba(255,255,255,.75); text-align:center; }
+
+/* Result section */
+.qm-result { display:flex; flex-direction:column; align-items:center; gap:.65rem; width:100%; }
+.qm-result.hidden { display:none; }
+.qm-code-label { font-size:.75rem; color:rgba(255,255,255,.5); letter-spacing:1px; text-transform:uppercase; margin:0; }
+.qm-code-display {
+  font-family: monospace; font-size: 2.4rem; letter-spacing: 8px;
+  color: var(--yellow); background: rgba(255,215,0,.1);
+  border: 2px solid rgba(255,215,0,.3); border-radius: 12px;
+  padding: .4rem 1.5rem;
+}
+.qm-copy-btn, .qm-goto-btn { width: 100%; }
+.qm-close { font-size:.85rem; margin-top:-.2rem; }

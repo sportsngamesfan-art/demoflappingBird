@@ -462,18 +462,91 @@ document.getElementById('card-reaction')?.addEventListener('click', () => showSc
 document.getElementById('card-shooter')?.addEventListener('click', () => showScreen('screen-shooter-landing'));
 document.getElementById('card-pacman')?.addEventListener('click', () => showScreen('screen-pacman-landing'));
 
-// Quick Actions
-document.getElementById('qa-create')?.addEventListener('click', () => showScreen('screen-landing'));
-document.getElementById('qa-join')?.addEventListener('click', () => {
-  showScreen('screen-landing');
-  setTimeout(() => document.getElementById('join-form')?.classList.remove('hidden'), 120);
+// ─── Quick-action modals ──────────────────────────────────────────────────────
+const GAME_ROUTES = {
+  flappy:   () => showScreen('screen-landing'),
+  reaction: () => showScreen('screen-reaction-landing'),
+  shooter:  () => showScreen('screen-shooter-landing'),
+  pacman:   () => showScreen('screen-pacman-landing'),
+};
+
+function openCreateModal() {
+  document.getElementById('create-room-result').classList.add('hidden');
+  document.querySelectorAll('.qm-game-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('create-room-modal').classList.remove('hidden');
+}
+function closeCreateModal() { document.getElementById('create-room-modal').classList.add('hidden'); }
+function openJoinModal() {
+  document.getElementById('qm-join-code').value = '';
+  document.getElementById('qm-join-error').textContent = '';
+  document.getElementById('join-room-modal').classList.remove('hidden');
+}
+function closeJoinModal() { document.getElementById('join-room-modal').classList.add('hidden'); }
+
+let _pendingGameKey = null;
+
+document.querySelectorAll('.qm-game-btn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    document.querySelectorAll('.qm-game-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    _pendingGameKey = btn.dataset.game;
+    myName = myName || 'Player' + Math.floor(Math.random() * 999);
+    await createRoom();
+    const code = document.getElementById('lobby-code').textContent;
+    document.getElementById('create-room-code').textContent = code;
+    document.getElementById('create-room-result').classList.remove('hidden');
+  });
 });
+
+document.getElementById('create-room-copy')?.addEventListener('click', () => {
+  const code = document.getElementById('create-room-code').textContent;
+  const url = `${location.origin}${location.pathname}?join=${code}&game=${_pendingGameKey || 'flappy'}`;
+  navigator.clipboard.writeText(url).catch(() => {});
+  document.getElementById('create-room-copy').textContent = '✅ Copied!';
+  setTimeout(() => { document.getElementById('create-room-copy').textContent = '📋 Copy Invite Link'; }, 2000);
+});
+
+document.getElementById('create-room-goto')?.addEventListener('click', () => {
+  closeCreateModal();
+  // lobby is already open — screen-lobby was set by createRoom()
+});
+
+document.getElementById('create-room-close')?.addEventListener('click', closeCreateModal);
+document.getElementById('join-room-close')?.addEventListener('click', closeJoinModal);
+
+document.getElementById('qm-join-btn')?.addEventListener('click', async () => {
+  const code = document.getElementById('qm-join-code').value.trim().toUpperCase();
+  if (code.length < 4) { document.getElementById('qm-join-error').textContent = 'Enter a 4-letter code.'; return; }
+  myName = myName || 'Player' + Math.floor(Math.random() * 999);
+  closeJoinModal();
+  await joinRoom(code);
+});
+
+document.getElementById('qm-join-code')?.addEventListener('input', e => {
+  e.target.value = e.target.value.toUpperCase();
+});
+
+// Quick Actions
+document.getElementById('qa-create')?.addEventListener('click', openCreateModal);
+document.getElementById('qa-join')?.addEventListener('click', openJoinModal);
 document.getElementById('qa-quickmatch')?.addEventListener('click', async () => {
-  const nameEl = document.getElementById('landing-name');
-  myName = nameEl?.value.trim() || 'Player' + Math.floor(Math.random() * 999);
-  setError('');
+  const games = Object.keys(GAME_ROUTES);
+  _pendingGameKey = games[Math.floor(Math.random() * games.length)];
+  myName = myName || 'Player' + Math.floor(Math.random() * 999);
   await createRoom();
 });
+
+// URL invite-link auto-join (?join=CODE&game=flappy)
+(function checkInviteUrl() {
+  const p = new URLSearchParams(location.search);
+  const code = p.get('join'), game = p.get('game');
+  if (code && code.length === 4) {
+    myName = myName || 'Player' + Math.floor(Math.random() * 999);
+    _pendingGameKey = game || 'flappy';
+    joinRoom(code.toUpperCase());
+    history.replaceState({}, '', location.pathname);
+  }
+})();
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 initNav();
