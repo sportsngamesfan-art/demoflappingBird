@@ -169,18 +169,17 @@ export class Maze {
   get remaining() { return this._totalPellets - this._eaten; }
   get total()     { return this._totalPellets; }
 
-  // Check if Pac-Man at pixel position can move in a direction
-  // px,py = center of pac-man in pixels (0,0 = top-left of maze)
-  canMove(px, py, dir, r = 6) {
-    const offsets = [[1,0],[0,1],[-1,0],[0,-1]]; // right down left up  (matches DIR enum)
-    const [dx, dy] = offsets[dir];
-    const nx = px + dx * (r + 1);
-    const ny = py + dy * (r + 1);
-    const col = Math.floor(nx / CELL);
-    const row = Math.floor(ny / CELL);
-    // Tunnel cells are always passable
-    if (this.get(col, row) === TUNNEL) return true;
-    return !this.isWall(col, row);
+  // Check if the tile adjacent to (px,py) in direction dir is passable.
+  // px,py must be at or near a tile center.
+  canMove(px, py, dir) {
+    const DX = [1, 0, -1, 0], DY = [0, 1, 0, -1];
+    const col = Math.round(px / CELL - 0.5); // tile col containing px
+    const row = Math.round(py / CELL - 0.5);
+    const nc = col + DX[dir];
+    const nr = row + DY[dir];
+    const t = this.get(nc, nr);
+    if (t === TUNNEL) return true;
+    return !this.isWall(nc, nr);
   }
 
   // Get tile coordinates from pixel position

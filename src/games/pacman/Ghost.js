@@ -35,7 +35,8 @@ export class Ghost {
     this._exitPhase = 0;             // sub-phase for exiting animation
 
     this.dir = DIR.LEFT;
-    this.speed = 1.5 * CELL;         // pixels per second, updated per mode
+    this.speed = 1.5 * CELL;
+    this._lastDecisionTile = -1;
 
     this._reset();
   }
@@ -50,6 +51,7 @@ export class Ghost {
     this._modePhase = 0;
     this._frightenTimer = 0;
     this._exitPhase = 0;
+    this._lastDecisionTile = -1;
   }
 
   respawn() {
@@ -211,14 +213,16 @@ export class Ghost {
     const cx = col * CELL + CELL / 2;
     const cy = row * CELL + CELL / 2;
     const step = this.speed * dt;
+    const tileKey = col * 1000 + row;
 
-    // At tile center: choose next direction
-    if (Math.abs(this.x - cx) < step + 0.5 && Math.abs(this.y - cy) < step + 0.5) {
+    // Choose new direction only once per tile (prevents snap-back oscillation)
+    if (Math.abs(this.x - cx) < step + 2 && Math.abs(this.y - cy) < step + 2
+        && this._lastDecisionTile !== tileKey) {
+      this._lastDecisionTile = tileKey;
       this.x = cx; this.y = cy;
 
       let newDir;
       if (this.mode === 'frightened') {
-        // Random valid direction
         const valid = [];
         const rev = (this.dir + 2) % 4;
         for (let d = 0; d < 4; d++) {
@@ -236,7 +240,6 @@ export class Ghost {
       this.dir = newDir;
     }
 
-    // Move in current direction
     this.x += DX[this.dir] * step;
     this.y += DY[this.dir] * step;
   }

@@ -94,6 +94,7 @@ export class PacmanGame {
       speed: PACMAN_SPEED_BASE * (1 + (this._level - 1) * 0.05),
       alive: true,
       mouthT: 0,
+      _lastTile: -1,
     };
   }
 
@@ -197,21 +198,23 @@ export class PacmanGame {
     const pm = this._pm;
     const speed = pm.speed * dt;
 
-    // Try to apply buffered direction at tile center
     const col = Math.floor(pm.x / CELL);
     const row = Math.floor(pm.y / CELL);
     const cx = col * CELL + CELL / 2;
     const cy = row * CELL + CELL / 2;
+    const tileKey = col * 1000 + row;
 
-    if (Math.abs(pm.x - cx) < speed + 0.5 && Math.abs(pm.y - cy) < speed + 0.5) {
+    // At a tile center (once per tile): try to turn, or stop if wall
+    if (Math.abs(pm.x - cx) < speed + 2 && Math.abs(pm.y - cy) < speed + 2
+        && pm._lastTile !== tileKey) {
+      pm._lastTile = tileKey;
+      pm.x = cx; pm.y = cy;
+
       if (this._maze.canMove(cx, cy, pm.nextDir)) {
         pm.dir = pm.nextDir;
-        pm.x = cx; pm.y = cy;
       } else if (!this._maze.canMove(cx, cy, pm.dir)) {
-        // Blocked in current dir too — stop
-        pm.x = cx; pm.y = cy;
         pm.mouthT += dt;
-        return;
+        return; // blocked — wait for input
       }
     }
 
