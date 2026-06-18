@@ -82,7 +82,7 @@ export class PacmanGame {
 
     this._audio.playIntro();
     this._waiting = true;
-    this._waitT = 3.0; // wait for intro
+    this._waitT = 1.0;
   }
 
   _initPacman() {
@@ -451,19 +451,19 @@ export class PacmanGame {
       this._drawPacman(ctx, ox, oy, s);
     }
 
-    // Particles
-    this._particles.forEach(p => {
-      const alpha = p.life / p.maxLife;
+    // Particles — batch all into one fill call per color group
+    if (this._particles.length) {
       ctx.save();
-      ctx.globalAlpha = alpha;
-      ctx.fillStyle = p.color;
-      ctx.shadowColor = p.color;
-      ctx.shadowBlur = 4 * s;
+      ctx.fillStyle = '#fff';
       ctx.beginPath();
-      ctx.arc(ox + p.x * s, oy + p.y * s, p.r * s, 0, Math.PI * 2);
+      this._particles.forEach(p => {
+        ctx.globalAlpha = p.life / p.maxLife;
+        ctx.moveTo(ox + p.x * s + p.r * s, oy + p.y * s);
+        ctx.arc(ox + p.x * s, oy + p.y * s, p.r * s, 0, Math.PI * 2);
+      });
       ctx.fill();
       ctx.restore();
-    });
+    }
 
     // Score popups
     this._scorePopups.forEach(p => {
@@ -499,8 +499,6 @@ export class PacmanGame {
     const deathScale = this._dying ? Math.max(0, this._deathT / 1.5) : 1;
     ctx.scale(deathScale, deathScale);
 
-    ctx.shadowBlur = 15 * s;
-    ctx.shadowColor = '#FFD700';
     ctx.fillStyle = '#FFD700';
     ctx.beginPath();
     ctx.moveTo(0, 0);

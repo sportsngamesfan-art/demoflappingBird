@@ -193,102 +193,107 @@ export class Maze {
     return { x: col * CELL + CELL / 2, y: row * CELL + CELL / 2 };
   }
 
+  // Pre-render static wall geometry to an offscreen canvas so render() is cheap.
+  _buildWallCache(scale) {
+    const s = scale;
+    const w = Math.ceil(COLS * CELL * s);
+    const h = Math.ceil(ROWS * CELL * s);
+    const oc = document.createElement('canvas');
+    oc.width = w; oc.height = h;
+    const c = oc.getContext('2d');
+
+    c.fillStyle = '#000';
+    c.fillRect(0, 0, w, h);
+
+    // Fill all wall cells
+    c.fillStyle = '#001a4d';
+    for (let row = 0; row < ROWS; row++) {
+      for (let col = 0; col < COLS; col++) {
+        if (this._orig[row][col] === WALL) {
+          c.fillRect(col * CELL * s, row * CELL * s, CELL * s, CELL * s);
+        }
+      }
+    }
+
+    // Draw neon border lines where wall meets non-wall — batched into one path
+    c.strokeStyle = '#00aaff';
+    c.lineWidth = Math.max(1, s * 1.5);
+    c.shadowColor = '#00aaff';
+    c.shadowBlur = s * 6;
+    c.beginPath();
+    for (let row = 0; row < ROWS; row++) {
+      for (let col = 0; col < COLS; col++) {
+        if (this._orig[row][col] !== WALL) continue;
+        const wx = col * CELL * s, wy = row * CELL * s, ws = CELL * s;
+        const neighbors = [
+          [col, row - 1, wx,      wy,      wx + ws, wy     ],
+          [col, row + 1, wx,      wy + ws, wx + ws, wy + ws],
+          [col - 1, row, wx,      wy,      wx,      wy + ws],
+          [col + 1, row, wx + ws, wy,      wx + ws, wy + ws],
+        ];
+        for (const [nc, nr, x1, y1, x2, y2] of neighbors) {
+          const nc2 = ((nc % COLS) + COLS) % COLS;
+          const nt = nr >= 0 && nr < ROWS ? this._orig[nr][nc2] : WALL;
+          if (nt !== WALL) { c.moveTo(x1, y1); c.lineTo(x2, y2); }
+        }
+      }
+    }
+    c.stroke();
+
+    // Ghost house door (magenta bar)
+    c.shadowBlur = 0;
+    for (let row = 0; row < ROWS; row++) {
+      for (let col = 0; col < COLS; col++) {
+        if (this._orig[row][col] === GHOST_DOOR) {
+          c.fillStyle = '#ff88ff';
+          c.fillRect(col * CELL * s, row * CELL * s + CELL * s * 0.4, CELL * s, CELL * s * 0.2);
+        }
+      }
+    }
+
+    this._wallCache = oc;
+    this._wallCacheScale = scale;
+  }
+
   render(ctx, pulseT, offsetX = 0, offsetY = 0, scale = 1) {
     const s = scale;
     const ox = offsetX, oy = offsetY;
 
-    // Black background for maze area
-    ctx.fillStyle = '#000';
-    ctx.fillRect(ox, oy, COLS * CELL * s, ROWS * CELL * s);
+    // Blit pre-rendered wall canvas (rebuilt only on scale change)
+    if (!this._wallCache || this._wallCacheScale !== scale) this._buildWallCache(scale);
+    ctx.drawImage(this._wallCache, ox, oy);
 
-    // Draw walls with neon blue glow
-    ctx.save();
-    ctx.strokeStyle = '#00aaff';
-    ctx.lineWidth = s * 2;
-    ctx.shadowColor = '#00aaff';
-    ctx.shadowBlur = s * 8;
-
-    for (let row = 0; row < ROWS; row++) {
-      for (let col = 0; col < COLS; col++) {
-        const t = this._grid[row][col];
-        if (t === WALL) {
-          const wx = ox + col * CELL * s;
-          const wy = oy + row * CELL * s;
-          const ws = CELL * s;
-
-          // Fill wall with dark navy
-          ctx.fillStyle = '#001a4d';
-          ctx.fillRect(wx, wy, ws, ws);
-
-          // Draw borders toward non-wall cells (create neon outline effect)
-          const neighbors = [
-            [col,   row-1, 0,0,ws,0],     // top border
-            [col,   row+1, 0,ws,ws,ws],   // bottom border
-            [col-1, row,   0,0,0,ws],     // left border
-            [col+1, row,   ws,0,ws,ws],   // right border
-          ];
-          for (const [nc, nr, x1, y1, x2, y2] of neighbors) {
-            const nc2 = ((nc % COLS) + COLS) % COLS;
-            const nt = nr >= 0 && nr < ROWS ? this._grid[nr][nc2] : WALL;
-            if (nt !== WALL) {
-              ctx.beginPath();
-              ctx.moveTo(wx + x1, wy + y1);
-              ctx.lineTo(wx + x2, wy + y2);
-              ctx.stroke();
-            }
-          }
-        }
-      }
-    }
-    ctx.restore();
-
-    // Ghost house door (magenta bar)
-    for (let row = 0; row < ROWS; row++) {
-      for (let col = 0; col < COLS; col++) {
-        if (this._grid[row][col] === GHOST_DOOR) {
-          const dx = ox + col * CELL * s;
-          const dy = oy + row * CELL * s + CELL * s * 0.4;
-          ctx.fillStyle = '#ff88ff';
-          ctx.fillRect(dx, dy, CELL * s, CELL * s * 0.2);
-        }
-      }
-    }
-
-    // Pellets
-    ctx.save();
-    ctx.fillStyle = '#fff';
-    ctx.shadowColor = '#fff';
-    ctx.shadowBlur = s * 3;
+    // Pellets — draw without shadowBlur for performance; faint white glow via small arc
+    ctx.fillStyle = '#ddd';
+    ctx.beginPath();
     for (let row = 0; row < ROWS; row++) {
       for (let col = 0; col < COLS; col++) {
         if (this._grid[row][col] === PELLET) {
-          const cx = ox + (col + 0.5) * CELL * s;
-          const cy = oy + (row + 0.5) * CELL * s;
-          ctx.beginPath();
-          ctx.arc(cx, cy, s * 2.5, 0, Math.PI * 2);
-          ctx.fill();
+          ctx.moveTo(ox + (col + 0.5) * CELL * s + s * 2.5, oy + (row + 0.5) * CELL * s);
+          ctx.arc(ox + (col + 0.5) * CELL * s, oy + (row + 0.5) * CELL * s, s * 2.5, 0, Math.PI * 2);
         }
       }
     }
-    ctx.restore();
+    ctx.fill();
 
-    // Power pellets (pulsing)
+    // Power pellets (pulsing gold — keep glow, only 4 of them so cheap)
     const pulse = 0.85 + 0.15 * Math.sin(pulseT * 6);
     ctx.save();
     ctx.shadowColor = '#FFD700';
-    ctx.shadowBlur = s * 14 * pulse;
+    ctx.shadowBlur = s * 10;
     ctx.fillStyle = '#FFD700';
+    ctx.beginPath();
     for (let row = 0; row < ROWS; row++) {
       for (let col = 0; col < COLS; col++) {
         if (this._grid[row][col] === POWER) {
           const cx = ox + (col + 0.5) * CELL * s;
           const cy = oy + (row + 0.5) * CELL * s;
-          ctx.beginPath();
+          ctx.moveTo(cx + s * 5 * pulse, cy);
           ctx.arc(cx, cy, s * 5 * pulse, 0, Math.PI * 2);
-          ctx.fill();
         }
       }
     }
+    ctx.fill();
     ctx.restore();
   }
 }

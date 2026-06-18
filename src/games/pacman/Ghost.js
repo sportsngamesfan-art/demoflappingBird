@@ -143,7 +143,7 @@ export class Ghost {
       this._exitPhase = 0;
     }
 
-    const baseSpeed = CELL * (1.3 + level * 0.07);
+    const baseSpeed = CELL * (6 + (level - 1) * 0.3);
     switch (this.mode) {
       case 'frightened': this.speed = baseSpeed * 0.5; break;
       case 'eaten':      this.speed = baseSpeed * 2.5; break;
@@ -261,18 +261,11 @@ export class Ghost {
       ? (flash && Math.floor(Date.now() / 300) % 2 === 0 ? '#fff' : '#0033cc')
       : this.color;
 
-    // Neon glow
-    ctx.save();
-    ctx.shadowBlur = 12 * scale;
-    ctx.shadowColor = frightened ? '#0055ff' : this.color;
-
     // Ghost body (rounded top, wavy bottom)
     ctx.fillStyle = bodyColor;
     ctx.beginPath();
-    ctx.arc(sx, sy - r * 0.2, r, Math.PI, 0, false); // top semicircle
+    ctx.arc(sx, sy - r * 0.2, r, Math.PI, 0, false);
     ctx.lineTo(sx + r, sy + r * 0.8);
-
-    // Wavy bottom (3 arcs)
     const waveW = (r * 2) / 3;
     for (let i = 2; i >= 0; i--) {
       const wx = sx - r + i * waveW + waveW / 2;
@@ -280,7 +273,6 @@ export class Ghost {
     }
     ctx.closePath();
     ctx.fill();
-    ctx.restore();
 
     // Eyes
     if (!frightened) {
