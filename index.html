@@ -33,39 +33,96 @@
 
   <!-- ── Home ─────────────────────────────────────────── -->
   <div id="screen-home" class="screen">
-    <div class="title-wrap">
-      <div class="title-bird">🎮</div>
-      <h1>SOCIAL GAMES</h1>
-      <p class="subtitle">Pick a game and play with friends</p>
+    <canvas id="home-bg-canvas"></canvas>
+    <div class="home-content">
+
+      <!-- Hero -->
+      <div class="home-hero">
+        <div class="home-logo">🎮</div>
+        <h1 class="home-title">SOCIAL GAMES <span class="tag">BETA</span></h1>
+        <p class="home-subtitle">Pick a game and play with friends</p>
+        <div class="home-badges">
+          <span class="home-badge">🎮 <span id="online-count">124</span> players online</span>
+          <span class="home-badge">⚡ Play instantly with friends</span>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="quick-actions">
+        <button class="btn btn-primary qa-btn" id="qa-create">🏠 Create Room</button>
+        <button class="btn btn-secondary qa-btn" id="qa-join">🔗 Join Room</button>
+        <button class="btn btn-accent qa-btn" id="qa-quickmatch">⚡ Quick Match</button>
+      </div>
+
+      <!-- Featured Game -->
+      <div class="featured-card" id="card-flappy">
+        <div class="featured-bg">🐦</div>
+        <div class="featured-info">
+          <div class="featured-tag">⭐ FEATURED</div>
+          <h2 class="featured-title">Flappy Bird</h2>
+          <p class="featured-desc">Multiplayer · Up to 6 players · Compete for the highest score</p>
+          <div class="featured-stats">
+            <span>👥 <span class="fc-online">34</span> playing now</span>
+            <span>🏆 Best: <span id="featured-best">—</span></span>
+          </div>
+          <button class="btn btn-primary featured-play-btn">▶ Play Now</button>
+        </div>
+      </div>
+
+      <!-- Game Carousel -->
+      <div class="carousel-section">
+        <h3 class="carousel-heading">All Games</h3>
+        <div class="game-carousel">
+          <div class="game-card-lg" id="card-reaction">
+            <div class="gcl-art">⚡</div>
+            <div class="gcl-body">
+              <div class="gcl-title">Reaction Tap</div>
+              <div class="gcl-desc">Test your reflexes · Solo · 5 rounds</div>
+              <div class="gcl-footer">
+                <span class="gcl-online">👥 <span>12</span></span>
+                <span class="gcl-tag">SOLO</span>
+              </div>
+              <button class="btn btn-primary gcl-play">▶ Play Now</button>
+            </div>
+          </div>
+          <div class="game-card-lg" id="card-shooter">
+            <div class="gcl-art">🔫</div>
+            <div class="gcl-body">
+              <div class="gcl-title">Shooter</div>
+              <div class="gcl-desc">Co-op run &amp; gun · 1–2 players</div>
+              <div class="gcl-footer">
+                <span class="gcl-online">👥 <span>8</span></span>
+                <span class="gcl-tag">CO-OP</span>
+              </div>
+              <button class="btn btn-primary gcl-play">▶ Play Now</button>
+            </div>
+          </div>
+          <div class="game-card-lg" id="card-pacman">
+            <div class="gcl-art">👻</div>
+            <div class="gcl-body">
+              <div class="gcl-title">Pac-Man</div>
+              <div class="gcl-desc">Classic arcade · 3 modes · 3 themes</div>
+              <div class="gcl-footer">
+                <span class="gcl-online">👥 <span>21</span></span>
+                <span class="gcl-tag">SOLO</span>
+              </div>
+              <button class="btn btn-primary gcl-play">▶ Play Now</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Social Activity Panel -->
+      <div class="activity-panel">
+        <h3 class="activity-heading">🟢 Live Activity</h3>
+        <div id="activity-feed" class="activity-feed"></div>
+      </div>
+
     </div>
-    <button id="btn-lobby-toggle" class="btn btn-ghost" style="margin-bottom:.5rem">🎮 3D View</button>
+
+    <!-- 3D lobby canvas (opt-in toggle, kept for compatibility) -->
+    <button id="btn-lobby-toggle" class="btn btn-ghost hidden">🎮 3D View</button>
     <canvas id="lobby-canvas" class="hidden"></canvas>
-    <div class="game-card-grid">
-      <div class="game-card" id="card-flappy">
-        <div class="game-card-icon">🐦</div>
-        <div class="game-card-title">Flappy Bird</div>
-        <div class="game-card-desc">Multiplayer party mode · Up to 6 players</div>
-        <div class="game-card-tag">MULTIPLAYER</div>
-      </div>
-      <div class="game-card" id="card-reaction">
-        <div class="game-card-icon">⚡</div>
-        <div class="game-card-title">Reaction Tap</div>
-        <div class="game-card-desc">Test your reflexes · Global leaderboard</div>
-        <div class="game-card-tag">ARCADE</div>
-      </div>
-      <div class="game-card" id="card-shooter">
-        <div class="game-card-icon">🔫</div>
-        <div class="game-card-title">Shooter</div>
-        <div class="game-card-desc">Co-op run &amp; gun · 1–2 players</div>
-        <div class="game-card-tag">CO-OP</div>
-      </div>
-      <div class="game-card" id="card-pacman">
-        <div class="game-card-icon">👻</div>
-        <div class="game-card-title">Pac-Man</div>
-        <div class="game-card-desc">Classic, Endless &amp; Time Attack modes</div>
-        <div class="game-card-tag">ARCADE</div>
-      </div>
-    </div>
   </div>
 
   <!-- ── Flappy Bird Landing ───────────────────────────── -->

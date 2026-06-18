@@ -531,3 +531,104 @@ input[type="text"].uppercase { text-transform: uppercase; letter-spacing: 4px; }
   0%,100% { transform: translateY(0) rotateY(0deg); }
   50%      { transform: translateY(-6px) rotateY(2deg); }
 }
+
+/* ── Home Screen Redesign ─────────────────────────── */
+#home-bg-canvas {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+}
+#screen-home {
+  overflow-y: auto; align-items: flex-start; padding: 0;
+  min-height: 100vh;
+}
+.home-content {
+  position: relative; z-index: 1;
+  width: min(700px, 96vw);
+  margin: 0 auto;
+  padding: 1.5rem 0 3rem;
+  display: flex; flex-direction: column; gap: 1.4rem;
+}
+
+/* Hero */
+.home-hero { text-align: center; padding: .5rem 0 .25rem; }
+.home-logo { font-size: 2.8rem; animation: bob 1.5s ease-in-out infinite; }
+.home-title { font-family:'Fredoka One',cursive; font-size:clamp(1.8rem,5vw,2.6rem); color:var(--yellow); text-shadow:3px 3px 0 rgba(0,0,0,.4); margin:.1rem 0 .2rem; }
+.home-subtitle { color:rgba(255,255,255,.65); font-size:.95rem; margin-bottom:.6rem; }
+.home-badges { display:flex; gap:.55rem; flex-wrap:wrap; justify-content:center; }
+.home-badge {
+  background:rgba(255,255,255,.09); border:1px solid rgba(255,255,255,.18);
+  border-radius:20px; padding:.28rem .8rem; font-size:.78rem; color:rgba(255,255,255,.82);
+}
+
+/* Quick Actions */
+.quick-actions { display:flex; gap:.6rem; flex-wrap:wrap; }
+.qa-btn { flex:1; min-width:110px; font-size:.92rem; }
+
+/* Featured Card */
+.featured-card {
+  background: linear-gradient(135deg, rgba(255,215,0,.1) 0%, rgba(255,140,0,.07) 100%);
+  border: 2px solid rgba(255,215,0,.28);
+  border-radius: 20px; padding: 1.6rem; position: relative; overflow: hidden;
+  cursor: pointer; transition: transform .2s, box-shadow .2s;
+}
+.featured-card:hover { transform: translateY(-4px); box-shadow: 0 14px 42px rgba(255,215,0,.18); }
+.featured-bg {
+  position:absolute; right:1.2rem; top:50%; transform:translateY(-50%);
+  font-size:5.5rem; opacity:.14; pointer-events:none; user-select:none;
+}
+.featured-info { position:relative; z-index:1; }
+.featured-tag { font-size:.68rem; font-weight:700; letter-spacing:2px; color:var(--yellow); margin-bottom:.35rem; }
+.featured-title { font-family:'Fredoka One',cursive; font-size:1.75rem; color:#fff; }
+.featured-desc { color:rgba(255,255,255,.62); font-size:.83rem; margin:.25rem 0 .6rem; }
+.featured-stats { display:flex; gap:1.1rem; font-size:.8rem; color:rgba(255,255,255,.65); margin-bottom:.85rem; }
+.featured-play-btn { padding:.55rem 1.5rem; font-size:.98rem; }
+
+/* Game Carousel */
+.carousel-heading { font-family:'Fredoka One',cursive; font-size:1.1rem; color:rgba(255,255,255,.75); margin-bottom:.7rem; }
+.game-carousel {
+  display:flex; gap:1rem; overflow-x:auto; scroll-snap-type:x mandatory;
+  padding-bottom:.5rem;
+  scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.18) transparent;
+}
+.game-carousel::-webkit-scrollbar { height:4px; }
+.game-carousel::-webkit-scrollbar-thumb { background:rgba(255,255,255,.18); border-radius:2px; }
+.game-card-lg {
+  flex:0 0 195px; scroll-snap-align:start;
+  background:rgba(255,255,255,.07); border:1.5px solid rgba(255,255,255,.11);
+  border-radius:18px; overflow:hidden; cursor:pointer;
+  transition:transform .22s, border-color .22s, box-shadow .22s;
+  display:flex; flex-direction:column; transform-style:preserve-3d;
+}
+.game-card-lg:hover {
+  transform:translateY(-6px) rotateX(-3deg) rotateY(5deg);
+  border-color:var(--yellow);
+  box-shadow:0 10px 30px rgba(255,215,0,.16);
+}
+.gcl-art {
+  height:105px; display:flex; align-items:center; justify-content:center;
+  font-size:3.4rem;
+  background:linear-gradient(160deg,rgba(255,255,255,.06) 0%,rgba(255,255,255,.02) 100%);
+}
+.gcl-body { padding:.82rem; display:flex; flex-direction:column; gap:.35rem; flex:1; }
+.gcl-title { font-family:'Fredoka One',cursive; font-size:1rem; color:#fff; }
+.gcl-desc { font-size:.72rem; color:rgba(255,255,255,.52); line-height:1.35; }
+.gcl-footer { display:flex; align-items:center; justify-content:space-between; font-size:.7rem; color:rgba(255,255,255,.48); }
+.gcl-tag {
+  background:rgba(255,255,255,.1); border-radius:5px;
+  padding:.14em .48em; font-size:.63rem; font-weight:700; letter-spacing:.4px;
+}
+.gcl-play { width:100%; font-size:.83rem; padding:.42rem; margin-top:.3rem; }
+
+/* Activity Panel */
+.activity-panel {
+  background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.09);
+  border-radius:16px; padding:.9rem 1.1rem;
+}
+.activity-heading { font-family:'Fredoka One',cursive; font-size:.98rem; color:rgba(255,255,255,.72); margin-bottom:.6rem; }
+.activity-feed { display:flex; flex-direction:column; gap:.42rem; }
+.activity-item {
+  display:flex; align-items:center; gap:.55rem;
+  font-size:.8rem; color:rgba(255,255,255,.68);
+  animation:fadeIn .4s ease;
+}
+.activity-dot { width:7px; height:7px; border-radius:50%; background:#4CAF50; flex-shrink:0; }
+.activity-dot.away { background:#FFD700; }

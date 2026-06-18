@@ -3,6 +3,8 @@ import { supabase, showScreen, genCode, hexColor, PLAYER_COLORS, RANK_MEDALS, su
 import { initReactionTap } from './games/reaction-tap/reaction-tap.js';
 import { initShooter } from './games/shooter/shooter.js';
 import { initPacman } from './games/pacman/pacman.js';
+import { initHomeBg } from './home-bg.js';
+import { gsap } from 'gsap';
 import { initNav, updateGameHUD } from './nav.js';
 import { initLobby3D, destroyLobby3D } from './lobby3d.js';
 
@@ -386,6 +388,37 @@ async function loadFlappyLeaderboard() {
   });
 }
 
+// ─── Activity feed ────────────────────────────────────────────────────────────
+const _ACT_NAMES = ['Ayan','Riaan','Siddharth','Priya','Lucas','Emma','James','Sofia','Noah','Mia'];
+const _ACT_GAMES = ['Flappy Bird','Pac-Man','Shooter','Reaction Tap'];
+const _ACT_VERBS = ['playing','in lobby for','just scored in','challenging friends in','started a room for'];
+
+function startActivityFeed() {
+  const feed = document.getElementById('activity-feed');
+  if (!feed) return;
+  function add() {
+    const name = _ACT_NAMES[Math.floor(Math.random() * _ACT_NAMES.length)];
+    const game = _ACT_GAMES[Math.floor(Math.random() * _ACT_GAMES.length)];
+    const verb = _ACT_VERBS[Math.floor(Math.random() * _ACT_VERBS.length)];
+    const away = Math.random() > 0.72;
+    const div = document.createElement('div');
+    div.className = 'activity-item';
+    div.innerHTML = `<span class="activity-dot${away ? ' away' : ''}"></span><span>${name} is ${verb} ${game}</span>`;
+    feed.prepend(div);
+    while (feed.children.length > 4) feed.lastChild.remove();
+  }
+  add();
+  setInterval(add, 3500);
+}
+
+function animateHomeEntrance() {
+  gsap.from('.home-hero',       { y: -18, opacity: 0, duration: .55, ease: 'power2.out' });
+  gsap.from('.quick-actions',   { y: 20,  opacity: 0, duration: .48, delay: .12, ease: 'power2.out' });
+  gsap.from('.featured-card',   { y: 28,  opacity: 0, duration: .52, delay: .22, ease: 'power2.out' });
+  gsap.from('.game-card-lg',    { y: 28,  opacity: 0, duration: .42, stagger: .09, delay: .32, ease: 'power2.out' });
+  gsap.from('.activity-panel',  { y: 18,  opacity: 0, duration: .38, delay: .60, ease: 'power2.out' });
+}
+
 // ─── Event listeners ──────────────────────────────────────────────────────────
 document.getElementById('btn-join-show').addEventListener('click', () =>
   document.getElementById('join-form').classList.toggle('hidden'));
@@ -425,16 +458,32 @@ document.getElementById('btn-lb-back').addEventListener('click', () => showScree
 document.getElementById('btn-flappy-home').addEventListener('click', () => showScreen('screen-home'));
 
 // ─── Home screen ─────────────────────────────────────────────────────────────
-document.getElementById('card-flappy').addEventListener('click', () => showScreen('screen-landing'));
-document.getElementById('card-reaction').addEventListener('click', () => showScreen('screen-reaction-landing'));
-document.getElementById('card-shooter').addEventListener('click', () => showScreen('screen-shooter-landing'));
-document.getElementById('card-pacman').addEventListener('click', () => showScreen('screen-pacman-landing'));
+document.getElementById('card-flappy')?.addEventListener('click', () => showScreen('screen-landing'));
+document.getElementById('card-reaction')?.addEventListener('click', () => showScreen('screen-reaction-landing'));
+document.getElementById('card-shooter')?.addEventListener('click', () => showScreen('screen-shooter-landing'));
+document.getElementById('card-pacman')?.addEventListener('click', () => showScreen('screen-pacman-landing'));
+
+// Quick Actions
+document.getElementById('qa-create')?.addEventListener('click', () => showScreen('screen-landing'));
+document.getElementById('qa-join')?.addEventListener('click', () => {
+  showScreen('screen-landing');
+  setTimeout(() => document.getElementById('join-form')?.classList.remove('hidden'), 120);
+});
+document.getElementById('qa-quickmatch')?.addEventListener('click', async () => {
+  const nameEl = document.getElementById('landing-name');
+  myName = nameEl?.value.trim() || 'Player' + Math.floor(Math.random() * 999);
+  setError('');
+  await createRoom();
+});
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 initNav();
 initReactionTap();
 initShooter(myId);
 initPacman();
+initHomeBg();
+startActivityFeed();
+animateHomeEntrance();
 
 // ─── 3D Lobby toggle ──────────────────────────────────────────────────────────
 let lobby3DActive = localStorage.getItem('lobbyMode') === '3d';
