@@ -392,7 +392,7 @@ async function loadFlappyLeaderboard() {
   });
 }
 
-// ─── Activity feed ────────────────────────────────────────────────────────────
+// ─── Activity / ticker data ───────────────────────────────────────────────────
 const _ACT_NAMES = ['Ayan','Riaan','Siddharth','Priya','Lucas','Emma','James','Sofia','Noah','Mia'];
 const _ACT_GAMES = ['Flappy Bird','Pac-Man','Shooter','Reaction Tap','Chess'];
 const _ACT_VERBS = ['playing','in lobby for','just scored in','challenging friends in','started a room for'];
@@ -404,31 +404,27 @@ const _VERB_ICON = {
   'started a room for': '🚀',
 };
 
-function startActivityFeed() {
-  const feed = document.getElementById('activity-feed');
-  if (!feed) return;
-  function add() {
+function buildTickerItems() {
+  const items = [];
+  for (let i = 0; i < 14; i++) {
     const name = _ACT_NAMES[Math.floor(Math.random() * _ACT_NAMES.length)];
     const game = _ACT_GAMES[Math.floor(Math.random() * _ACT_GAMES.length)];
     const verb = _ACT_VERBS[Math.floor(Math.random() * _ACT_VERBS.length)];
     const icon = _VERB_ICON[verb] || '🎮';
-    const ts = Date.now();
-    const div = document.createElement('div');
-    div.className = 'activity-item';
-    div.dataset.ts = ts;
-    div.innerHTML = `<span class="activity-icon">${icon}</span><span class="activity-text">${name} is ${verb} ${game}</span><span class="activity-time">just now</span>`;
-    feed.prepend(div);
-    while (feed.children.length > 5) feed.lastChild.remove();
+    items.push(`<span class="ott-ticker__item">${icon} ${name} is ${verb} ${game}</span><span class="ott-ticker__sep">·</span>`);
   }
-  add();
-  setInterval(add, 3500);
-  // Update relative timestamps every 30s
+  return items.join('');
+}
+
+function startTicker() {
+  const track = document.getElementById('ticker-track');
+  if (!track) return;
+  const html = buildTickerItems();
+  track.innerHTML = html + html; // doubled for seamless CSS loop
   setInterval(() => {
-    feed.querySelectorAll('.activity-item[data-ts]').forEach(el => {
-      const age = Math.round((Date.now() - el.dataset.ts) / 60000);
-      el.querySelector('.activity-time').textContent = age < 1 ? 'just now' : `${age}m ago`;
-    });
-  }, 30000);
+    const h = buildTickerItems();
+    track.innerHTML = h + h;
+  }, 60000);
 }
 
 // ─── Live Match widget ────────────────────────────────────────────────────────
@@ -516,12 +512,86 @@ function startLiveMatchWidget() {
   document.getElementById('btn-join-queue')?.addEventListener('click',  () => showScreen('screen-chess-landing'));
 }
 
+// ─── Hero rotation ────────────────────────────────────────────────────────────
+const HERO_SLIDES = [
+  { game:'flappy',   emoji:'🐦', title:'Flappy Bird',   tagline:'Multiplayer · Race to survive!',      tagClass:'tag-multi',  tag:'MULTI',  players:34, screen:'screen-landing' },
+  { game:'reaction', emoji:'⚡', title:'Reaction Tap',  tagline:'Test your reflexes · 5 rounds',       tagClass:'tag-solo',   tag:'SOLO',   players:12, screen:'screen-reaction-landing' },
+  { game:'shooter',  emoji:'🔫', title:'Shooter',       tagline:'Co-op run & gun · 1–2 players',       tagClass:'tag-coop',   tag:'CO-OP',  players:8,  screen:'screen-shooter-landing' },
+  { game:'pacman',   emoji:'👻', title:'Pac-Man',       tagline:'Classic arcade · 3 modes · 3 themes', tagClass:'tag-solo',   tag:'SOLO',   players:21, screen:'screen-pacman-landing' },
+  { game:'chess',    emoji:'♟️', title:'Chess',         tagline:'2 Players · Classic strategy game',   tagClass:'tag-local',  tag:'LOCAL',  players:5,  screen:'screen-chess-landing' },
+];
+let _heroIdx = 0;
+let _heroTimer = null;
+
+function applyHeroSlide(idx) {
+  const slide = HERO_SLIDES[idx];
+  const hero = document.getElementById('ott-hero');
+  if (!hero) return;
+  hero.classList.add('ott-hero--transitioning');
+  setTimeout(() => {
+    document.getElementById('hero-title').textContent   = slide.title;
+    document.getElementById('hero-tagline').textContent = slide.tagline;
+    document.getElementById('hero-meta').textContent    = `👥 ${slide.players} playing now`;
+    const tagEl = document.getElementById('hero-tag');
+    tagEl.textContent = slide.tag;
+    tagEl.className   = `ott-hero__tag ${slide.tagClass}`;
+    hero.querySelector('.ott-hero__bg').textContent = slide.emoji;
+    hero.querySelectorAll('.ott-hero__dot').forEach((d, i) =>
+      d.classList.toggle('active', i === idx));
+    hero.classList.remove('ott-hero--transitioning');
+  }, 450);
+  document.getElementById('hero-play-btn').onclick = () => showScreen(slide.screen);
+}
+
+function startHeroRotation() {
+  applyHeroSlide(0);
+  _heroTimer = setInterval(() => {
+    _heroIdx = (_heroIdx + 1) % HERO_SLIDES.length;
+    applyHeroSlide(_heroIdx);
+  }, 8000);
+  document.querySelectorAll('.ott-hero__dot').forEach((dot, i) => {
+    dot.addEventListener('click', (e) => {
+      e.stopPropagation();
+      clearInterval(_heroTimer);
+      _heroIdx = i;
+      applyHeroSlide(i);
+      _heroTimer = setInterval(() => {
+        _heroIdx = (_heroIdx + 1) % HERO_SLIDES.length;
+        applyHeroSlide(_heroIdx);
+      }, 8000);
+    });
+  });
+  document.getElementById('ott-hero')?.addEventListener('click', () => {
+    showScreen(HERO_SLIDES[_heroIdx].screen);
+  });
+}
+
+// ─── Friends Drawer ───────────────────────────────────────────────────────────
+function initDrawer() {
+  const toggle = document.getElementById('drawer-toggle');
+  const panel  = document.getElementById('drawer-panel');
+  if (!toggle || !panel) return;
+  toggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = panel.classList.contains('open');
+    panel.classList.toggle('open', !isOpen);
+    toggle.setAttribute('aria-expanded', String(!isOpen));
+  });
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.ott-drawer')) {
+      panel.classList.remove('open');
+      toggle.setAttribute('aria-expanded', 'false');
+    }
+  });
+}
+
 function animateHomeEntrance() {
-  gsap.from('.home-hero',       { y: -18, opacity: 0, duration: .55, ease: 'power2.out' });
-  gsap.from('.quick-actions',   { y: 20,  opacity: 0, duration: .48, delay: .12, ease: 'power2.out' });
-  gsap.from('.game-card-lg',    { y: 28,  opacity: 0, duration: .42, stagger: .08, delay: .28, ease: 'power2.out' });
-  gsap.from('.activity-panel',  { y: 18,  opacity: 0, duration: .38, delay: .55, ease: 'power2.out' });
-  gsap.from('.home-right',      { x: 20,  opacity: 0, duration: .52, delay: .35, ease: 'power2.out' });
+  gsap.from('.ott-topbar',         { y: -20, opacity: 0, duration: .4,  ease: 'power2.out' });
+  gsap.from('.ott-hero__content',  { y: 24,  opacity: 0, duration: .55, delay: .1,  ease: 'power2.out' });
+  gsap.from('.ott-row',            { y: 22,  opacity: 0, duration: .42, stagger: .1, delay: .25, ease: 'power2.out' });
+  gsap.from('.ott-card',           { y: 28,  opacity: 0, duration: .38, stagger: .05, delay: .4, ease: 'power2.out' });
+  gsap.from('.ott-ticker',         { y: 14,  opacity: 0, duration: .35, delay: .7,  ease: 'power2.out' });
+  gsap.from('.ott-drawer__toggle', { scale: 0, opacity: 0, duration: .4, delay: .75, ease: 'back.out(1.5)' });
 }
 
 // ─── Event listeners ──────────────────────────────────────────────────────────
@@ -560,21 +630,31 @@ document.getElementById('btn-back-lobby').addEventListener('click', () => showSc
 document.getElementById('btn-lb-back').addEventListener('click', () => showScreen('screen-landing'));
 document.getElementById('btn-flappy-home').addEventListener('click', () => showScreen('screen-home'));
 
-// ─── Home screen ─────────────────────────────────────────────────────────────
-document.getElementById('card-flappy')?.addEventListener('click', () => showScreen('screen-landing'));
-document.getElementById('card-flappy-carousel')?.addEventListener('click', () => showScreen('screen-landing'));
-document.getElementById('card-reaction')?.addEventListener('click', () => showScreen('screen-reaction-landing'));
-document.getElementById('card-shooter')?.addEventListener('click', () => showScreen('screen-shooter-landing'));
-document.getElementById('card-pacman')?.addEventListener('click', () => showScreen('screen-pacman-landing'));
-document.getElementById('card-chess')?.addEventListener('click', () => showScreen('screen-chess-landing'));
+// ─── Home screen card clicks ──────────────────────────────────────────────────
+const _CARD_SCREENS = {
+  flappy:   'screen-landing',
+  reaction: 'screen-reaction-landing',
+  shooter:  'screen-shooter-landing',
+  pacman:   'screen-pacman-landing',
+  chess:    'screen-chess-landing',
+};
+document.querySelectorAll('.ott-card').forEach(card => {
+  const screen = _CARD_SCREENS[card.dataset.game];
+  if (!screen) return;
+  card.querySelector('.ott-card__play')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    showScreen(screen);
+  });
+  card.addEventListener('click', () => showScreen(screen));
+});
 
-// ─── Carousel scroll buttons ──────────────────────────────────────────────────
+// ─── Carousel scroll buttons (kept for back-compat, no-op if elements gone) ───
 (function initCarousel() {
   const carousel = document.getElementById('game-carousel');
   const btnPrev  = document.getElementById('carousel-prev');
   const btnNext  = document.getElementById('carousel-next');
   if (!carousel || !btnPrev || !btnNext) return;
-  const SCROLL_BY = 201; // card width (185) + gap (16)
+  const SCROLL_BY = 201;
   function updateBtns() {
     btnPrev.disabled = carousel.scrollLeft <= 4;
     btnNext.disabled = carousel.scrollLeft + carousel.clientWidth >= carousel.scrollWidth - 4;
@@ -679,8 +759,10 @@ initShooter(myId);
 initPacman();
 initChess();
 initHomeBg();
-startActivityFeed();
+startTicker();
 startLiveMatchWidget();
+startHeroRotation();
+initDrawer();
 
 // ─── 3D Lobby toggle ──────────────────────────────────────────────────────────
 let lobby3DActive = localStorage.getItem('lobbyMode') === '3d';

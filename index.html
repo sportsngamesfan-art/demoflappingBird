@@ -67,111 +67,161 @@
   <!-- ── Home ─────────────────────────────────────────── -->
   <div id="screen-home" class="screen">
     <canvas id="home-bg-canvas"></canvas>
-    <div class="home-content">
 
-      <!-- LEFT COLUMN -->
-      <div class="home-left">
+    <!-- Sticky Top Bar -->
+    <div class="ott-topbar">
+      <div class="ott-topbar__logo">🎮 Social Games <span class="tag" style="font-size:.55em">BETA</span></div>
+      <div class="ott-topbar__center">
+        <span class="ott-online-pill">🟢 <span id="online-count">124</span> online</span>
+      </div>
+      <div class="ott-topbar__actions">
+        <button class="btn btn-primary" id="qa-create">🏠 Create</button>
+        <button class="btn btn-secondary" id="qa-join">🔗 Join</button>
+        <button class="btn btn-accent" id="qa-quickmatch">⚡ Quick</button>
+      </div>
+    </div>
 
-        <!-- Hero -->
-        <div class="home-hero">
-          <div class="home-logo">🎮</div>
-          <h1 class="home-title">SOCIAL GAMES <span class="tag">BETA</span></h1>
-          <p class="home-subtitle">Pick a game and play with friends</p>
-          <div class="home-badges">
-            <span class="home-badge">🎮 <span id="online-count">124</span> players online</span>
-            <span class="home-badge">⚡ Play instantly with friends</span>
+    <!-- Scrollable Body -->
+    <div class="ott-scroll-body">
+
+      <!-- Hero Banner -->
+      <div class="ott-hero" id="ott-hero">
+        <div class="ott-hero__bg">🐦</div>
+        <div class="ott-hero__overlay"></div>
+        <div class="ott-hero__content">
+          <span class="ott-hero__tag tag-multi" id="hero-tag">MULTI</span>
+          <h2 class="ott-hero__title" id="hero-title">Flappy Bird</h2>
+          <p class="ott-hero__tagline" id="hero-tagline">Multiplayer · Race to survive!</p>
+          <p class="ott-hero__meta" id="hero-meta">👥 34 playing now</p>
+          <button class="btn btn-primary" id="hero-play-btn" style="width:fit-content;padding:.6rem 1.6rem">▶ Play Now</button>
+        </div>
+        <div class="ott-hero__dots" id="hero-dots">
+          <span class="ott-hero__dot active"></span>
+          <span class="ott-hero__dot"></span>
+          <span class="ott-hero__dot"></span>
+          <span class="ott-hero__dot"></span>
+          <span class="ott-hero__dot"></span>
+        </div>
+      </div>
+
+      <!-- Game Rows -->
+      <div class="ott-rows">
+
+        <div class="ott-row">
+          <div class="ott-row__header">
+            <span class="ott-row__title">🎮 All Games</span>
           </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="quick-actions">
-          <button class="btn btn-primary qa-btn" id="qa-create">🏠 Create Room</button>
-          <button class="btn btn-secondary qa-btn" id="qa-join">🔗 Join Room</button>
-          <button class="btn btn-accent qa-btn" id="qa-quickmatch">⚡ Quick Match</button>
-        </div>
-
-        <!-- Game Carousel -->
-        <div class="carousel-section">
-          <h3 class="carousel-heading">All Games</h3>
-          <div class="carousel-wrapper">
-            <button class="carousel-btn prev" id="carousel-prev" aria-label="Previous games">&#8249;</button>
-            <button class="carousel-btn next" id="carousel-next" aria-label="Next games">&#8250;</button>
-            <div class="game-carousel" id="game-carousel">
-              <div class="game-card-lg" id="card-flappy-carousel" data-tag="MULTI">
-                <div class="gcl-art">🐦<span class="gcl-players-badge">34</span></div>
-                <div class="gcl-body">
-                  <div class="gcl-title">Flappy Bird</div>
-                  <div class="gcl-desc">Multiplayer · Up to 6 players · Race to survive</div>
-                  <div class="gcl-footer">
-                    <span class="gcl-tag tag-multi">MULTI</span>
-                  </div>
-                  <button class="btn btn-primary gcl-play">▶ Play Now</button>
-                </div>
-              </div>
-              <div class="game-card-lg" id="card-reaction" data-tag="SOLO">
-                <div class="gcl-art">⚡<span class="gcl-players-badge">12</span></div>
-                <div class="gcl-body">
-                  <div class="gcl-title">Reaction Tap</div>
-                  <div class="gcl-desc">Test your reflexes · Solo · 5 rounds</div>
-                  <div class="gcl-footer">
-                    <span class="gcl-tag tag-solo">SOLO</span>
-                  </div>
-                  <button class="btn btn-primary gcl-play">▶ Play Now</button>
-                </div>
-              </div>
-              <div class="game-card-lg" id="card-shooter" data-tag="CO-OP">
-                <div class="gcl-art">🔫<span class="gcl-players-badge">8</span></div>
-                <div class="gcl-body">
-                  <div class="gcl-title">Shooter</div>
-                  <div class="gcl-desc">Co-op run &amp; gun · 1–2 players</div>
-                  <div class="gcl-footer">
-                    <span class="gcl-tag tag-coop">CO-OP</span>
-                  </div>
-                  <button class="btn btn-primary gcl-play">▶ Play Now</button>
-                </div>
-              </div>
-              <div class="game-card-lg" id="card-pacman" data-tag="SOLO">
-                <div class="gcl-art">👻<span class="gcl-players-badge">21</span></div>
-                <div class="gcl-body">
-                  <div class="gcl-title">Pac-Man</div>
-                  <div class="gcl-desc">Classic arcade · 3 modes · 3 themes</div>
-                  <div class="gcl-footer">
-                    <span class="gcl-tag tag-solo">SOLO</span>
-                  </div>
-                  <button class="btn btn-primary gcl-play">▶ Play Now</button>
-                </div>
-              </div>
-              <div class="game-card-lg" id="card-chess" data-tag="LOCAL">
-                <div class="gcl-art">♟️<span class="gcl-players-badge">5</span></div>
-                <div class="gcl-body">
-                  <div class="gcl-title">Chess</div>
-                  <div class="gcl-desc">2 Players · Local · Classic strategy game</div>
-                  <div class="gcl-footer">
-                    <span class="gcl-tag tag-local">LOCAL</span>
-                  </div>
-                  <button class="btn btn-primary gcl-play">▶ Play Now</button>
-                </div>
-              </div>
+          <div class="ott-row__track">
+            <div class="ott-card" data-game="flappy" data-tag="MULTI">
+              <div class="ott-card__art"><span class="ott-card__emoji">🐦</span><span class="ott-card__players">👥 34</span></div>
+              <div class="ott-card__body"><span class="ott-card__title">Flappy Bird</span><span class="ott-card__tag tag-multi">MULTI</span></div>
+              <div class="ott-card__hover"><p class="ott-card__desc">Multiplayer · Up to 6 players · Race to survive longest</p><button class="btn btn-primary ott-card__play">▶ Play Now</button></div>
+            </div>
+            <div class="ott-card" data-game="reaction" data-tag="SOLO">
+              <div class="ott-card__art"><span class="ott-card__emoji">⚡</span><span class="ott-card__players">👥 12</span></div>
+              <div class="ott-card__body"><span class="ott-card__title">Reaction Tap</span><span class="ott-card__tag tag-solo">SOLO</span></div>
+              <div class="ott-card__hover"><p class="ott-card__desc">Test your reflexes · Solo · 5 rounds of speed challenges</p><button class="btn btn-primary ott-card__play">▶ Play Now</button></div>
+            </div>
+            <div class="ott-card" data-game="shooter" data-tag="CO-OP">
+              <div class="ott-card__art"><span class="ott-card__emoji">🔫</span><span class="ott-card__players">👥 8</span></div>
+              <div class="ott-card__body"><span class="ott-card__title">Shooter</span><span class="ott-card__tag tag-coop">CO-OP</span></div>
+              <div class="ott-card__hover"><p class="ott-card__desc">Co-op run &amp; gun · 1–2 players · Destroy waves</p><button class="btn btn-primary ott-card__play">▶ Play Now</button></div>
+            </div>
+            <div class="ott-card" data-game="pacman" data-tag="SOLO">
+              <div class="ott-card__art"><span class="ott-card__emoji">👻</span><span class="ott-card__players">👥 21</span></div>
+              <div class="ott-card__body"><span class="ott-card__title">Pac-Man</span><span class="ott-card__tag tag-solo">SOLO</span></div>
+              <div class="ott-card__hover"><p class="ott-card__desc">Classic arcade · 3 modes · 3 themes · Chase or run</p><button class="btn btn-primary ott-card__play">▶ Play Now</button></div>
+            </div>
+            <div class="ott-card" data-game="chess" data-tag="LOCAL">
+              <div class="ott-card__art"><span class="ott-card__emoji">♟️</span><span class="ott-card__players">👥 5</span></div>
+              <div class="ott-card__body"><span class="ott-card__title">Chess</span><span class="ott-card__tag tag-local">LOCAL</span></div>
+              <div class="ott-card__hover"><p class="ott-card__desc">2 players · Local hot-seat · Full rules + checkmate</p><button class="btn btn-primary ott-card__play">▶ Play Now</button></div>
             </div>
           </div>
         </div>
 
-        <!-- Live Activity Panel -->
-        <div class="activity-panel">
-          <h3 class="activity-heading">🟢 Live Activity</h3>
-          <div id="activity-feed" class="activity-feed"></div>
+        <div class="ott-row">
+          <div class="ott-row__header">
+            <span class="ott-row__title">👥 Multiplayer</span>
+          </div>
+          <div class="ott-row__track">
+            <div class="ott-card" data-game="flappy" data-tag="MULTI">
+              <div class="ott-card__art"><span class="ott-card__emoji">🐦</span><span class="ott-card__players">👥 34</span></div>
+              <div class="ott-card__body"><span class="ott-card__title">Flappy Bird</span><span class="ott-card__tag tag-multi">MULTI</span></div>
+              <div class="ott-card__hover"><p class="ott-card__desc">Multiplayer · Up to 6 players · Race to survive longest</p><button class="btn btn-primary ott-card__play">▶ Play Now</button></div>
+            </div>
+            <div class="ott-card" data-game="chess" data-tag="LOCAL">
+              <div class="ott-card__art"><span class="ott-card__emoji">♟️</span><span class="ott-card__players">👥 5</span></div>
+              <div class="ott-card__body"><span class="ott-card__title">Chess</span><span class="ott-card__tag tag-local">LOCAL</span></div>
+              <div class="ott-card__hover"><p class="ott-card__desc">2 players · Local hot-seat · Full rules + checkmate</p><button class="btn btn-primary ott-card__play">▶ Play Now</button></div>
+            </div>
+            <div class="ott-card" data-game="shooter" data-tag="CO-OP">
+              <div class="ott-card__art"><span class="ott-card__emoji">🔫</span><span class="ott-card__players">👥 8</span></div>
+              <div class="ott-card__body"><span class="ott-card__title">Shooter</span><span class="ott-card__tag tag-coop">CO-OP</span></div>
+              <div class="ott-card__hover"><p class="ott-card__desc">Co-op run &amp; gun · 1–2 players · Destroy waves</p><button class="btn btn-primary ott-card__play">▶ Play Now</button></div>
+            </div>
+          </div>
         </div>
 
-      </div><!-- end home-left -->
+        <div class="ott-row">
+          <div class="ott-row__header">
+            <span class="ott-row__title">🏆 Play Solo</span>
+          </div>
+          <div class="ott-row__track">
+            <div class="ott-card" data-game="reaction" data-tag="SOLO">
+              <div class="ott-card__art"><span class="ott-card__emoji">⚡</span><span class="ott-card__players">👥 12</span></div>
+              <div class="ott-card__body"><span class="ott-card__title">Reaction Tap</span><span class="ott-card__tag tag-solo">SOLO</span></div>
+              <div class="ott-card__hover"><p class="ott-card__desc">Test your reflexes · Solo · 5 rounds of speed challenges</p><button class="btn btn-primary ott-card__play">▶ Play Now</button></div>
+            </div>
+            <div class="ott-card" data-game="pacman" data-tag="SOLO">
+              <div class="ott-card__art"><span class="ott-card__emoji">👻</span><span class="ott-card__players">👥 21</span></div>
+              <div class="ott-card__body"><span class="ott-card__title">Pac-Man</span><span class="ott-card__tag tag-solo">SOLO</span></div>
+              <div class="ott-card__hover"><p class="ott-card__desc">Classic arcade · 3 modes · 3 themes · Chase or run</p><button class="btn btn-primary ott-card__play">▶ Play Now</button></div>
+            </div>
+          </div>
+        </div>
 
-      <!-- RIGHT COLUMN -->
-      <div class="home-right">
+      </div><!-- end ott-rows -->
 
-        <!-- Live Match Widget -->
-        <div class="right-panel live-match-panel">
-          <div class="panel-header">
+      <!-- Live Activity Ticker -->
+      <div class="ott-ticker">
+        <div class="ott-ticker__track" id="ticker-track"></div>
+      </div>
+
+      <div class="ott-scroll-footer"></div>
+
+    </div><!-- end ott-scroll-body -->
+
+    <!-- Friends Drawer (floating FAB) -->
+    <div class="ott-drawer" id="ott-drawer">
+      <div class="ott-drawer__panel" id="drawer-panel">
+        <div class="ott-drawer__panel-header">
+          <span>Friends Online</span>
+          <span class="friends-count" id="friends-count">4</span>
+        </div>
+        <div class="friends-list" id="friends-list">
+          <div class="friend-item">
+            <span class="friend-dot playing"></span>
+            <div class="friend-info"><span class="friend-name">Emma</span><span class="friend-status">Playing Chess</span></div>
+          </div>
+          <div class="friend-item">
+            <span class="friend-dot playing"></span>
+            <div class="friend-info"><span class="friend-name">Riaan</span><span class="friend-status">In Flappy Bird</span></div>
+          </div>
+          <div class="friend-item">
+            <span class="friend-dot playing"></span>
+            <div class="friend-info"><span class="friend-name">Sofia</span><span class="friend-status">Playing Pac-Man</span></div>
+          </div>
+          <div class="friend-item">
+            <span class="friend-dot idle"></span>
+            <div class="friend-info"><span class="friend-name">James</span><span class="friend-status">Idle</span></div>
+          </div>
+        </div>
+        <div class="ott-drawer__divider"></div>
+        <div class="ott-drawer__live-match">
+          <div class="ott-drawer__lm-header">
             <span class="live-dot"></span>
-            <span class="panel-title">Live Match</span>
+            <span class="ott-drawer__lm-title">Live Match</span>
             <span class="live-badge">LIVE</span>
           </div>
           <div class="lm-game-name">♟️ Chess</div>
@@ -185,43 +235,19 @@
             <span id="lm-status-text">White to move</span>
             <span class="lm-move-count" id="lm-move-count">Move 7</span>
           </div>
-          <!-- Mini chess board -->
           <div class="mini-board" id="mini-board"></div>
           <div class="lm-actions">
             <button class="btn btn-ghost lm-btn" id="btn-watch-match">👁 Watch</button>
-            <button class="btn btn-primary lm-btn" id="btn-join-queue">+ Join Queue</button>
+            <button class="btn btn-primary lm-btn" id="btn-join-queue">+ Join</button>
           </div>
         </div>
-
-        <!-- Friends Online Panel -->
-        <div class="right-panel friends-panel">
-          <div class="panel-header">
-            <span class="panel-title">Friends Online</span>
-            <span class="friends-count" id="friends-count">4</span>
-          </div>
-          <div class="friends-list" id="friends-list">
-            <div class="friend-item">
-              <span class="friend-dot playing"></span>
-              <div class="friend-info"><span class="friend-name">Emma</span><span class="friend-status">Playing Chess</span></div>
-            </div>
-            <div class="friend-item">
-              <span class="friend-dot playing"></span>
-              <div class="friend-info"><span class="friend-name">Riaan</span><span class="friend-status">In Flappy Bird</span></div>
-            </div>
-            <div class="friend-item">
-              <span class="friend-dot playing"></span>
-              <div class="friend-info"><span class="friend-name">Sofia</span><span class="friend-status">Playing Pac-Man</span></div>
-            </div>
-            <div class="friend-item">
-              <span class="friend-dot idle"></span>
-              <div class="friend-info"><span class="friend-name">James</span><span class="friend-status">Idle</span></div>
-            </div>
-          </div>
-          <button class="btn btn-ghost" style="width:100%;font-size:.8rem;margin-top:.5rem">+ Invite Friends</button>
-        </div>
-
-      </div><!-- end home-right -->
-
+        <button class="btn btn-ghost" style="width:100%;font-size:.8rem">+ Invite Friends</button>
+      </div>
+      <button class="ott-drawer__toggle" id="drawer-toggle" aria-expanded="false">
+        <span class="ott-drawer__toggle-icon">👥</span>
+        <span class="ott-drawer__toggle-count" id="drawer-friend-count">4</span>
+        <span class="ott-drawer__pulse"></span>
+      </button>
     </div>
 
     <!-- 3D lobby canvas (opt-in toggle, kept for compatibility) -->
