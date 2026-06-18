@@ -52,6 +52,7 @@ function renderBirdPicker() {
     btn.textContent = emoji;
     btn.addEventListener('click', () => {
       myBirdIdx = i;
+      if (lobbyPlayers[myId]) lobbyPlayers[myId].birdIdx = myBirdIdx;
       renderBirdPicker();
       channel?.track({ name: myName, isHost, birdIdx: myBirdIdx });
     });
@@ -165,7 +166,7 @@ function openChannel(code) {
 async function createRoom() {
   isHost = true;
   // Add self immediately so lobbyPlayers is never empty when host hits Start
-  lobbyPlayers[myId] = { name: myName, isHost: true };
+  lobbyPlayers[myId] = { name: myName, isHost: true, birdIdx: myBirdIdx };
 
   const code = genCode();
   await openChannel(code);
@@ -182,7 +183,7 @@ async function createRoom() {
 
 async function joinRoom(code) {
   isHost = false;
-  lobbyPlayers[myId] = { name: myName, isHost: false };
+  lobbyPlayers[myId] = { name: myName, isHost: false, birdIdx: myBirdIdx };
 
   await openChannel(code.toUpperCase());
 
@@ -424,16 +425,14 @@ document.getElementById('btn-join-show').addEventListener('click', () =>
   document.getElementById('join-form').classList.toggle('hidden'));
 
 document.getElementById('btn-create').addEventListener('click', async () => {
-  myName = document.getElementById('landing-name').value.trim();
-  if (!myName) return setError('Enter your name first.');
+  myName = document.getElementById('landing-name').value.trim() || 'Player' + Math.floor(Math.random() * 999);
   setError('');
   await createRoom();
 });
 
 document.getElementById('btn-join').addEventListener('click', async () => {
-  myName = document.getElementById('landing-name').value.trim();
+  myName = document.getElementById('landing-name').value.trim() || 'Player' + Math.floor(Math.random() * 999);
   const code = document.getElementById('join-code').value.trim();
-  if (!myName) return setError('Enter your name first.');
   if (code.length < 4) return setError('Enter a 4-letter room code.');
   setError('');
   await joinRoom(code);
