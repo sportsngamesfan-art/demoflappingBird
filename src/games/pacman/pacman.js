@@ -1,5 +1,6 @@
 import { PacmanGame } from './PacmanGame.js';
 import { showScreen, submitScore, loadLeaderboard } from '../../core/shared.js';
+import { registerGame, unregisterGame, updateGameHUD } from '../../nav.js';
 
 let pmName = '';
 let pmGame = null;
@@ -55,6 +56,7 @@ function startPacman(mode, theme) {
   const canvas = document.getElementById('pm-canvas');
 
   pmGame = new PacmanGame(canvas, mode, async ({ score, level }) => {
+    unregisterGame();
     pmGame = null;
 
     if (score > 0) {
@@ -73,6 +75,8 @@ function startPacman(mode, theme) {
     showScreen('screen-pacman-gameover');
   }, theme);
 
+  registerGame(pmGame);
+  updateGameHUD({ name: pmName, score: 0 });
   pmGame.start();
 }
 

@@ -3,6 +3,8 @@ import { supabase, showScreen, genCode, hexColor, PLAYER_COLORS, RANK_MEDALS, su
 import { initReactionTap } from './games/reaction-tap/reaction-tap.js';
 import { initShooter } from './games/shooter/shooter.js';
 import { initPacman } from './games/pacman/pacman.js';
+import { initNav, updateGameHUD } from './nav.js';
+import { initLobby3D, destroyLobby3D } from './lobby3d.js';
 
 // ─── Physics constants ────────────────────────────────────────────────────────
 const GRAVITY     = 0.45;
@@ -324,12 +326,15 @@ function startRendering({ level: l, players }) {
 function updateHUD(players) {
   const container = document.getElementById('hud-scores');
   container.innerHTML = '';
-  Object.values(players).sort((a, b) => b.score - a.score).forEach(p => {
+  const sorted = Object.values(players).sort((a, b) => b.score - a.score);
+  sorted.forEach(p => {
     const div = document.createElement('div');
     div.className = 'hud-player' + (p.alive ? '' : ' hud-dead');
     div.innerHTML = `<span class="hud-dot" style="background:${hexColor(p.color)}"></span>${p.name}: ${p.score}`;
     container.appendChild(div);
   });
+  // Feed top player into universal HUD overlay
+  if (sorted.length) updateGameHUD({ name: sorted[0].name, score: sorted[0].score });
 }
 
 function renderGameOver(results) {
@@ -404,7 +409,36 @@ document.getElementById('card-shooter').addEventListener('click', () => showScre
 document.getElementById('card-pacman').addEventListener('click', () => showScreen('screen-pacman-landing'));
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
+initNav();
 initReactionTap();
 initShooter(myId);
 initPacman();
+
+// ─── 3D Lobby toggle ──────────────────────────────────────────────────────────
+let lobby3DActive = localStorage.getItem('lobbyMode') === '3d';
+const lobbyCanvas = document.getElementById('lobby-canvas');
+const lobbyGrid   = document.querySelector('.game-card-grid');
+const lobbyToggle = document.getElementById('btn-lobby-toggle');
+
+function applyLobbyMode() {
+  if (lobby3DActive) {
+    lobbyGrid.classList.add('hidden');
+    lobbyCanvas.classList.remove('hidden');
+    lobbyToggle.textContent = '◼ 2D View';
+    initLobby3D(lobbyCanvas, screenId => showScreen(screenId));
+  } else {
+    lobbyGrid.classList.remove('hidden');
+    lobbyCanvas.classList.add('hidden');
+    lobbyToggle.textContent = '🎮 3D View';
+    destroyLobby3D();
+  }
+}
+
+lobbyToggle.addEventListener('click', () => {
+  lobby3DActive = !lobby3DActive;
+  localStorage.setItem('lobbyMode', lobby3DActive ? '3d' : '2d');
+  applyLobbyMode();
+});
+
+applyLobbyMode();
 showScreen('screen-home');

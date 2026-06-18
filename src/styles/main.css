@@ -421,3 +421,100 @@ input[type="text"].uppercase { text-transform: uppercase; letter-spacing: 4px; }
 .muted { color: rgba(255,255,255,.55); font-size: .9rem; text-align: center; }
 .error-msg { color: #FF7070; font-size: .9rem; min-height: 1.2em; text-align: center; }
 #lobby-status { color: rgba(255,255,255,.6); text-align: center; margin-top: .25rem; }
+
+/* ── Universal Nav ────────────────────────────────── */
+#global-nav {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
+  display: flex;
+  gap: .5rem;
+}
+.nav-btn {
+  background: rgba(0,0,0,.6);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 10px;
+  color: #fff;
+  padding: .35rem .85rem;
+  font-family: 'Fredoka One', cursive;
+  font-size: .9rem;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition: background .15s;
+}
+.nav-btn:hover { background: rgba(255,255,255,.18); }
+
+/* ── In-Game HUD Overlay ──────────────────────────── */
+#game-hud-overlay {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 900;
+  background: rgba(0,0,0,.55);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 10px;
+  padding: .3rem .75rem;
+  font-weight: 700;
+  font-size: .9rem;
+  display: flex;
+  gap: .6rem;
+  align-items: center;
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+}
+#hud-player-name { color: var(--yellow); }
+#hud-player-score::before { content: '·'; margin-right: .4rem; opacity: .5; }
+
+/* ── Exit Modal ───────────────────────────────────── */
+.exit-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(0,0,0,.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.exit-modal-card {
+  background: #1a1a2e;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 20px;
+  padding: 2rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  align-items: center;
+  min-width: 260px;
+}
+
+/* ── 3D Lobby Canvas ──────────────────────────────── */
+#lobby-canvas {
+  width: min(520px, 92vw);
+  height: 340px;
+  border-radius: 20px;
+  cursor: default;
+}
+
+/* ── CSS 3D Game Cards ────────────────────────────── */
+.game-card-grid { perspective: 900px; }
+.game-card {
+  transform-style: preserve-3d;
+  transition: transform .28s ease, box-shadow .28s ease, border-color .28s ease;
+  animation: cardFloat 4s ease-in-out infinite;
+}
+.game-card:nth-child(1) { animation-delay: 0s; }
+.game-card:nth-child(2) { animation-delay: .7s; }
+.game-card:nth-child(3) { animation-delay: 1.4s; }
+.game-card:nth-child(4) { animation-delay: 2.1s; }
+.game-card:hover {
+  transform: rotateY(8deg) rotateX(-5deg) translateZ(18px) scale(1.05);
+  border-color: var(--yellow);
+  box-shadow: 0 16px 40px rgba(255,215,0,.3), 0 0 0 1px rgba(255,215,0,.15);
+  animation-play-state: paused;
+}
+@keyframes cardFloat {
+  0%,100% { transform: translateY(0) rotateY(0deg); }
+  50%      { transform: translateY(-6px) rotateY(2deg); }
+}

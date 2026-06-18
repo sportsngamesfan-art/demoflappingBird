@@ -8,6 +8,29 @@
 </head>
 <body>
 
+  <!-- ── Universal Nav ─────────────────────────────────── -->
+  <div id="global-nav" class="hidden">
+    <button id="nav-btn-home" class="nav-btn hidden">🏠 Home</button>
+    <button id="nav-btn-exit" class="nav-btn hidden">⎋ Exit</button>
+  </div>
+
+  <!-- ── Game HUD overlay ───────────────────────────────── -->
+  <div id="game-hud-overlay" class="hidden">
+    <span id="hud-player-name"></span>
+    <span id="hud-player-score"></span>
+  </div>
+
+  <!-- ── Exit Confirm Modal ─────────────────────────────── -->
+  <div id="exit-modal" class="exit-modal hidden">
+    <div class="exit-modal-card">
+      <h2>Game Paused</h2>
+      <div class="btn-row" style="width:100%">
+        <button id="exit-modal-resume" class="btn btn-primary">▶ Resume</button>
+        <button id="exit-modal-quit" class="btn btn-secondary">🏠 Quit</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ── Home ─────────────────────────────────────────── -->
   <div id="screen-home" class="screen">
     <div class="title-wrap">
@@ -15,6 +38,8 @@
       <h1>SOCIAL GAMES</h1>
       <p class="subtitle">Pick a game and play with friends</p>
     </div>
+    <button id="btn-lobby-toggle" class="btn btn-ghost" style="margin-bottom:.5rem">🎮 3D View</button>
+    <canvas id="lobby-canvas" class="hidden"></canvas>
     <div class="game-card-grid">
       <div class="game-card" id="card-flappy">
         <div class="game-card-icon">🐦</div>

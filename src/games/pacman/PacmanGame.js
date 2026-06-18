@@ -119,6 +119,9 @@ export class PacmanGame {
     this._raf = requestAnimationFrame(t => this._loop(t));
   }
 
+  pause()  { this._paused = true; }
+  resume() { this._paused = false; this._lastT = performance.now(); }
+
   destroy() {
     if (this._raf) { cancelAnimationFrame(this._raf); this._raf = null; }
     window.removeEventListener('keydown', this._onKey);
