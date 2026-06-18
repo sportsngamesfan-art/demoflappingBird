@@ -955,3 +955,17 @@ input[type="text"].uppercase { text-transform: uppercase; letter-spacing: 4px; }
 }
 .qm-copy-btn, .qm-goto-btn { width: 100%; }
 .qm-close { font-size:.85rem; margin-top:-.2rem; }
+
+/* ── Chess Game Screen ────────────────────────────── */
+#screen-chess-game {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .75rem;
+}
+#chess-canvas {
+  max-width: 480px;
+  width: 100%;
+  border: 2px solid #444;
+  border-radius: 4px;
+}
