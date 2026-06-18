@@ -69,99 +69,158 @@
     <canvas id="home-bg-canvas"></canvas>
     <div class="home-content">
 
-      <!-- Hero -->
-      <div class="home-hero">
-        <div class="home-logo">🎮</div>
-        <h1 class="home-title">SOCIAL GAMES <span class="tag">BETA</span></h1>
-        <p class="home-subtitle">Pick a game and play with friends</p>
-        <div class="home-badges">
-          <span class="home-badge">🎮 <span id="online-count">124</span> players online</span>
-          <span class="home-badge">⚡ Play instantly with friends</span>
-        </div>
-      </div>
+      <!-- LEFT COLUMN -->
+      <div class="home-left">
 
-      <!-- Quick Actions -->
-      <div class="quick-actions">
-        <button class="btn btn-primary qa-btn" id="qa-create">🏠 Create Room</button>
-        <button class="btn btn-secondary qa-btn" id="qa-join">🔗 Join Room</button>
-        <button class="btn btn-accent qa-btn" id="qa-quickmatch">⚡ Quick Match</button>
-      </div>
-
-      <!-- Game Carousel -->
-      <div class="carousel-section">
-        <h3 class="carousel-heading">All Games</h3>
-        <div class="carousel-wrapper">
-          <button class="carousel-btn prev" id="carousel-prev" aria-label="Previous games">&#8249;</button>
-          <button class="carousel-btn next" id="carousel-next" aria-label="Next games">&#8250;</button>
-        <div class="game-carousel" id="game-carousel">
-          <div class="game-card-lg" id="card-flappy-carousel">
-            <div class="gcl-art">🐦</div>
-            <div class="gcl-body">
-              <div class="gcl-title">Flappy Bird</div>
-              <div class="gcl-desc">Multiplayer · Up to 6 players · Race to survive</div>
-              <div class="gcl-footer">
-                <span class="gcl-online">👥 <span>34</span></span>
-                <span class="gcl-tag">MULTI</span>
-              </div>
-              <button class="btn btn-primary gcl-play">▶ Play Now</button>
-            </div>
-          </div>
-          <div class="game-card-lg" id="card-reaction">
-            <div class="gcl-art">⚡</div>
-            <div class="gcl-body">
-              <div class="gcl-title">Reaction Tap</div>
-              <div class="gcl-desc">Test your reflexes · Solo · 5 rounds</div>
-              <div class="gcl-footer">
-                <span class="gcl-online">👥 <span>12</span></span>
-                <span class="gcl-tag">SOLO</span>
-              </div>
-              <button class="btn btn-primary gcl-play">▶ Play Now</button>
-            </div>
-          </div>
-          <div class="game-card-lg" id="card-shooter">
-            <div class="gcl-art">🔫</div>
-            <div class="gcl-body">
-              <div class="gcl-title">Shooter</div>
-              <div class="gcl-desc">Co-op run &amp; gun · 1–2 players</div>
-              <div class="gcl-footer">
-                <span class="gcl-online">👥 <span>8</span></span>
-                <span class="gcl-tag">CO-OP</span>
-              </div>
-              <button class="btn btn-primary gcl-play">▶ Play Now</button>
-            </div>
-          </div>
-          <div class="game-card-lg" id="card-pacman">
-            <div class="gcl-art">👻</div>
-            <div class="gcl-body">
-              <div class="gcl-title">Pac-Man</div>
-              <div class="gcl-desc">Classic arcade · 3 modes · 3 themes</div>
-              <div class="gcl-footer">
-                <span class="gcl-online">👥 <span>21</span></span>
-                <span class="gcl-tag">SOLO</span>
-              </div>
-              <button class="btn btn-primary gcl-play">▶ Play Now</button>
-            </div>
-          </div>
-          <div class="game-card-lg" id="card-chess">
-            <div class="gcl-art">♟️</div>
-            <div class="gcl-body">
-              <div class="gcl-title">Chess</div>
-              <div class="gcl-desc">2 Players · Local · Classic strategy game</div>
-              <div class="gcl-footer">
-                <span class="gcl-tag">LOCAL</span>
-              </div>
-              <button class="btn btn-primary gcl-play">▶ Play Now</button>
-            </div>
+        <!-- Hero -->
+        <div class="home-hero">
+          <div class="home-logo">🎮</div>
+          <h1 class="home-title">SOCIAL GAMES <span class="tag">BETA</span></h1>
+          <p class="home-subtitle">Pick a game and play with friends</p>
+          <div class="home-badges">
+            <span class="home-badge">🎮 <span id="online-count">124</span> players online</span>
+            <span class="home-badge">⚡ Play instantly with friends</span>
           </div>
         </div>
-        </div><!-- end carousel-wrapper -->
-      </div>
 
-      <!-- Social Activity Panel -->
-      <div class="activity-panel">
-        <h3 class="activity-heading">🟢 Live Activity</h3>
-        <div id="activity-feed" class="activity-feed"></div>
-      </div>
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+          <button class="btn btn-primary qa-btn" id="qa-create">🏠 Create Room</button>
+          <button class="btn btn-secondary qa-btn" id="qa-join">🔗 Join Room</button>
+          <button class="btn btn-accent qa-btn" id="qa-quickmatch">⚡ Quick Match</button>
+        </div>
+
+        <!-- Game Carousel -->
+        <div class="carousel-section">
+          <h3 class="carousel-heading">All Games</h3>
+          <div class="carousel-wrapper">
+            <button class="carousel-btn prev" id="carousel-prev" aria-label="Previous games">&#8249;</button>
+            <button class="carousel-btn next" id="carousel-next" aria-label="Next games">&#8250;</button>
+            <div class="game-carousel" id="game-carousel">
+              <div class="game-card-lg" id="card-flappy-carousel" data-tag="MULTI">
+                <div class="gcl-art">🐦<span class="gcl-players-badge">34</span></div>
+                <div class="gcl-body">
+                  <div class="gcl-title">Flappy Bird</div>
+                  <div class="gcl-desc">Multiplayer · Up to 6 players · Race to survive</div>
+                  <div class="gcl-footer">
+                    <span class="gcl-tag tag-multi">MULTI</span>
+                  </div>
+                  <button class="btn btn-primary gcl-play">▶ Play Now</button>
+                </div>
+              </div>
+              <div class="game-card-lg" id="card-reaction" data-tag="SOLO">
+                <div class="gcl-art">⚡<span class="gcl-players-badge">12</span></div>
+                <div class="gcl-body">
+                  <div class="gcl-title">Reaction Tap</div>
+                  <div class="gcl-desc">Test your reflexes · Solo · 5 rounds</div>
+                  <div class="gcl-footer">
+                    <span class="gcl-tag tag-solo">SOLO</span>
+                  </div>
+                  <button class="btn btn-primary gcl-play">▶ Play Now</button>
+                </div>
+              </div>
+              <div class="game-card-lg" id="card-shooter" data-tag="CO-OP">
+                <div class="gcl-art">🔫<span class="gcl-players-badge">8</span></div>
+                <div class="gcl-body">
+                  <div class="gcl-title">Shooter</div>
+                  <div class="gcl-desc">Co-op run &amp; gun · 1–2 players</div>
+                  <div class="gcl-footer">
+                    <span class="gcl-tag tag-coop">CO-OP</span>
+                  </div>
+                  <button class="btn btn-primary gcl-play">▶ Play Now</button>
+                </div>
+              </div>
+              <div class="game-card-lg" id="card-pacman" data-tag="SOLO">
+                <div class="gcl-art">👻<span class="gcl-players-badge">21</span></div>
+                <div class="gcl-body">
+                  <div class="gcl-title">Pac-Man</div>
+                  <div class="gcl-desc">Classic arcade · 3 modes · 3 themes</div>
+                  <div class="gcl-footer">
+                    <span class="gcl-tag tag-solo">SOLO</span>
+                  </div>
+                  <button class="btn btn-primary gcl-play">▶ Play Now</button>
+                </div>
+              </div>
+              <div class="game-card-lg" id="card-chess" data-tag="LOCAL">
+                <div class="gcl-art">♟️<span class="gcl-players-badge">5</span></div>
+                <div class="gcl-body">
+                  <div class="gcl-title">Chess</div>
+                  <div class="gcl-desc">2 Players · Local · Classic strategy game</div>
+                  <div class="gcl-footer">
+                    <span class="gcl-tag tag-local">LOCAL</span>
+                  </div>
+                  <button class="btn btn-primary gcl-play">▶ Play Now</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Activity Panel -->
+        <div class="activity-panel">
+          <h3 class="activity-heading">🟢 Live Activity</h3>
+          <div id="activity-feed" class="activity-feed"></div>
+        </div>
+
+      </div><!-- end home-left -->
+
+      <!-- RIGHT COLUMN -->
+      <div class="home-right">
+
+        <!-- Live Match Widget -->
+        <div class="right-panel live-match-panel">
+          <div class="panel-header">
+            <span class="live-dot"></span>
+            <span class="panel-title">Live Match</span>
+            <span class="live-badge">LIVE</span>
+          </div>
+          <div class="lm-game-name">♟️ Chess</div>
+          <div class="lm-players">
+            <span class="lm-player white-player">Ted</span>
+            <span class="lm-vs">vs</span>
+            <span class="lm-player black-player">Emma</span>
+          </div>
+          <div class="lm-status" id="lm-status">
+            <span class="lm-status-dot white"></span>
+            <span id="lm-status-text">White to move</span>
+            <span class="lm-move-count" id="lm-move-count">Move 7</span>
+          </div>
+          <!-- Mini chess board -->
+          <div class="mini-board" id="mini-board"></div>
+          <div class="lm-actions">
+            <button class="btn btn-ghost lm-btn" id="btn-watch-match">👁 Watch</button>
+            <button class="btn btn-primary lm-btn" id="btn-join-queue">+ Join Queue</button>
+          </div>
+        </div>
+
+        <!-- Friends Online Panel -->
+        <div class="right-panel friends-panel">
+          <div class="panel-header">
+            <span class="panel-title">Friends Online</span>
+            <span class="friends-count" id="friends-count">4</span>
+          </div>
+          <div class="friends-list" id="friends-list">
+            <div class="friend-item">
+              <span class="friend-dot playing"></span>
+              <div class="friend-info"><span class="friend-name">Emma</span><span class="friend-status">Playing Chess</span></div>
+            </div>
+            <div class="friend-item">
+              <span class="friend-dot playing"></span>
+              <div class="friend-info"><span class="friend-name">Riaan</span><span class="friend-status">In Flappy Bird</span></div>
+            </div>
+            <div class="friend-item">
+              <span class="friend-dot playing"></span>
+              <div class="friend-info"><span class="friend-name">Sofia</span><span class="friend-status">Playing Pac-Man</span></div>
+            </div>
+            <div class="friend-item">
+              <span class="friend-dot idle"></span>
+              <div class="friend-info"><span class="friend-name">James</span><span class="friend-status">Idle</span></div>
+            </div>
+          </div>
+          <button class="btn btn-ghost" style="width:100%;font-size:.8rem;margin-top:.5rem">+ Invite Friends</button>
+        </div>
+
+      </div><!-- end home-right -->
 
     </div>
 
