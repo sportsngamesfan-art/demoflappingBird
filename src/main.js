@@ -3,6 +3,7 @@ import { supabase, showScreen, genCode, hexColor, PLAYER_COLORS, RANK_MEDALS, su
 import { initReactionTap } from './games/reaction-tap/reaction-tap.js';
 import { initShooter } from './games/shooter/shooter.js';
 import { initPacman } from './games/pacman/pacman.js';
+import { initChess } from './games/chess/chess.js';
 import { initHomeBg } from './home-bg.js';
 import { gsap } from 'gsap';
 import { initNav, updateGameHUD } from './nav.js';
@@ -464,6 +465,7 @@ document.getElementById('card-flappy-carousel')?.addEventListener('click', () =>
 document.getElementById('card-reaction')?.addEventListener('click', () => showScreen('screen-reaction-landing'));
 document.getElementById('card-shooter')?.addEventListener('click', () => showScreen('screen-shooter-landing'));
 document.getElementById('card-pacman')?.addEventListener('click', () => showScreen('screen-pacman-landing'));
+document.getElementById('card-chess')?.addEventListener('click', () => showScreen('screen-chess-landing'));
 
 // ─── Quick-action modals ──────────────────────────────────────────────────────
 const GAME_ROUTES = {
@@ -471,6 +473,7 @@ const GAME_ROUTES = {
   reaction: () => showScreen('screen-reaction-landing'),
   shooter:  () => showScreen('screen-shooter-landing'),
   pacman:   () => showScreen('screen-pacman-landing'),
+  chess:    () => showScreen('screen-chess-landing'),
 };
 
 function openCreateModal() {
@@ -556,6 +559,7 @@ initNav();
 initReactionTap();
 initShooter(myId);
 initPacman();
+initChess();
 initHomeBg();
 startActivityFeed();
 animateHomeEntrance();
