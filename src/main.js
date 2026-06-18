@@ -239,8 +239,10 @@ async function hostStartGame() {
     const gapY = 100 + Math.random() * (CANVAS_H - 200 - cfg.pipeGap);
     hostState.pipes.push({ x: CANVAS_W + 80, gapY, gap: cfg.pipeGap, passed: new Set() });
   };
-  setTimeout(spawnPipe, 1500);
-  hostState.pipeTimer = setInterval(spawnPipe, cfg.pipeInterval);
+  hostState.pipeTimer = setTimeout(() => {
+    spawnPipe();
+    hostState.pipeTimer = setInterval(spawnPipe, cfg.pipeInterval);
+  }, 1500);
   hostState.gameLoop  = setInterval(hostTick, 1000 / 30);
 
   // Tell guests to start rendering
@@ -458,6 +460,7 @@ document.getElementById('btn-flappy-home').addEventListener('click', () => showS
 
 // ─── Home screen ─────────────────────────────────────────────────────────────
 document.getElementById('card-flappy')?.addEventListener('click', () => showScreen('screen-landing'));
+document.getElementById('card-flappy-carousel')?.addEventListener('click', () => showScreen('screen-landing'));
 document.getElementById('card-reaction')?.addEventListener('click', () => showScreen('screen-reaction-landing'));
 document.getElementById('card-shooter')?.addEventListener('click', () => showScreen('screen-shooter-landing'));
 document.getElementById('card-pacman')?.addEventListener('click', () => showScreen('screen-pacman-landing'));

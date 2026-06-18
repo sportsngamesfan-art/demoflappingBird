@@ -387,6 +387,7 @@ export class PacmanGame {
   }
 
   _gameOver() {
+    this.destroy();
     this._onEnd({ score: this._score, level: this._level });
   }
 
