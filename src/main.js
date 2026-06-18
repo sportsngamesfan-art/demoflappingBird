@@ -789,5 +789,25 @@ lobbyToggle?.addEventListener('click', () => {
 
 applyLobbyMode();
 showScreen('screen-home');
-// Animate after screen is visible so GSAP doesn't start on display:none elements
-requestAnimationFrame(animateHomeEntrance);
+requestAnimationFrame(() => {
+  animateHomeEntrance();
+  initRowNav();
+});
+
+function initRowNav() {
+  document.querySelectorAll('.ott-row').forEach(row => {
+    const track = row.querySelector('.ott-row__track');
+    const prev  = row.querySelector('.ott-row__nav-btn.prev');
+    const next  = row.querySelector('.ott-row__nav-btn.next');
+    if (!track || !prev || !next) return;
+    const STEP = 220;
+    function update() {
+      prev.disabled = track.scrollLeft <= 4;
+      next.disabled = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
+    }
+    prev.addEventListener('click', () => { track.scrollBy({ left: -STEP, behavior: 'smooth' }); });
+    next.addEventListener('click', () => { track.scrollBy({ left:  STEP, behavior: 'smooth' }); });
+    track.addEventListener('scroll', update, { passive: true });
+    update();
+  });
+}
