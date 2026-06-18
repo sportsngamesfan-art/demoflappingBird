@@ -213,12 +213,11 @@ export class Ghost {
     const cx = col * CELL + CELL / 2;
     const cy = row * CELL + CELL / 2;
     const step = this.speed * dt;
-    const tileKey = col * 1000 + row;
 
-    // Choose new direction only once per tile (prevents snap-back oscillation)
-    if (Math.abs(this.x - cx) < step + 2 && Math.abs(this.y - cy) < step + 2
-        && this._lastDecisionTile !== tileKey) {
-      this._lastDecisionTile = tileKey;
+    // Snap + choose direction when within 1.5px of tile center.
+    // Ghosts move ~1.6px/frame so after snapping and advancing one step
+    // the distance is ~1.6px ≥ 1.5px, preventing re-fire next frame.
+    if (Math.abs(this.x - cx) < 1.5 && Math.abs(this.y - cy) < 1.5) {
       this.x = cx; this.y = cy;
 
       let newDir;
@@ -242,6 +241,9 @@ export class Ghost {
 
     this.x += DX[this.dir] * step;
     this.y += DY[this.dir] * step;
+
+    // Hard vertical clamp
+    this.y = Math.max(CELL / 2, Math.min(this.y, ROWS * CELL - CELL / 2));
   }
 
   isFlashing() {

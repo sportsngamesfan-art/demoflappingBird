@@ -24,7 +24,7 @@ const GHOST_CONFIGS = [
 ];
 
 const PACMAN_START = { col: 13, row: 23 };
-const PACMAN_SPEED_BASE = CELL * 8;  // px per second
+const PACMAN_SPEED_BASE = CELL * 5;  // px per second (~5 tiles/s)
 const FRIGHTEN_DURATION = 8;          // seconds
 const EXTRA_LIFE_SCORE = 10000;
 
@@ -94,7 +94,6 @@ export class PacmanGame {
       speed: PACMAN_SPEED_BASE * (1 + (this._level - 1) * 0.05),
       alive: true,
       mouthT: 0,
-      _lastTile: -1,
     };
   }
 
@@ -202,19 +201,18 @@ export class PacmanGame {
     const row = Math.floor(pm.y / CELL);
     const cx = col * CELL + CELL / 2;
     const cy = row * CELL + CELL / 2;
-    const tileKey = col * 1000 + row;
 
-    // At a tile center (once per tile): try to turn, or stop if wall
-    if (Math.abs(pm.x - cx) < speed + 2 && Math.abs(pm.y - cy) < speed + 2
-        && pm._lastTile !== tileKey) {
-      pm._lastTile = tileKey;
+    // Snap + direction check whenever within 1.5px of tile center.
+    // Threshold is tight enough that after snapping and advancing one step
+    // (~2.1px at 60fps) we are outside it, preventing snap-back oscillation.
+    if (Math.abs(pm.x - cx) < 1.5 && Math.abs(pm.y - cy) < 1.5) {
       pm.x = cx; pm.y = cy;
-
       if (this._maze.canMove(cx, cy, pm.nextDir)) {
         pm.dir = pm.nextDir;
-      } else if (!this._maze.canMove(cx, cy, pm.dir)) {
+      }
+      if (!this._maze.canMove(cx, cy, pm.dir)) {
         pm.mouthT += dt;
-        return; // blocked — wait for input
+        return; // blocked — wait for player input
       }
     }
 
@@ -222,9 +220,12 @@ export class PacmanGame {
     pm.y += DY[pm.dir] * speed;
     pm.mouthT += dt;
 
-    // Tunnel wrap
+    // Horizontal tunnel wrap
     if (pm.x < -CELL / 2) pm.x = COLS * CELL + CELL / 2;
     if (pm.x > COLS * CELL + CELL / 2) pm.x = -CELL / 2;
+
+    // Hard vertical clamp — prevents exiting maze if somehow past border walls
+    pm.y = Math.max(CELL / 2, Math.min(pm.y, ROWS * CELL - CELL / 2));
   }
 
   _checkPellet() {

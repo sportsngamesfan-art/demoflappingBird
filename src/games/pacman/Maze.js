@@ -262,6 +262,15 @@ export class Maze {
     if (!this._wallCache || this._wallCacheScale !== scale) this._buildWallCache(scale);
     ctx.drawImage(this._wallCache, ox, oy);
 
+    // Outer border — neon blue glow rect around the whole maze
+    ctx.save();
+    ctx.strokeStyle = '#00aaff';
+    ctx.lineWidth = Math.max(2, s * 2.5);
+    ctx.shadowColor = '#00aaff';
+    ctx.shadowBlur = s * 10;
+    ctx.strokeRect(ox + 1, oy + 1, COLS * CELL * s - 2, ROWS * CELL * s - 2);
+    ctx.restore();
+
     // Pellets — draw without shadowBlur for performance; faint white glow via small arc
     ctx.fillStyle = '#ddd';
     ctx.beginPath();
