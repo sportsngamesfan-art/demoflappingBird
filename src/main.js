@@ -9,7 +9,7 @@ import { initLobby3D, destroyLobby3D } from './lobby3d.js';
 // ─── Physics constants ────────────────────────────────────────────────────────
 const GRAVITY     = 0.45;
 const FLAP_FORCE  = -8.5;
-const BIRD_RADIUS = 14;
+const BIRD_RADIUS = 17;
 const CANVAS_W    = 800;
 const CANVAS_H    = 600;
 const PIPE_WIDTH  = 60;
@@ -24,8 +24,9 @@ const BIRD_EMOJIS = ['🐦', '🐧', '🦜', '🦚', '🦉', '🦅'];
 
 // ─── App state ────────────────────────────────────────────────────────────────
 const myId = crypto.randomUUID();
-let myName = '';
-let isHost = false;
+let myName   = '';
+let isHost   = false;
+let myBirdIdx = 0;
 let level  = 'medium';
 let channel = null;
 let game    = null;
@@ -40,6 +41,23 @@ let hostState = null;
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function setError(msg) { document.getElementById('landing-error').textContent = msg; }
 
+function renderBirdPicker() {
+  const row = document.getElementById('bird-options-row');
+  row.innerHTML = '';
+  BIRD_EMOJIS.forEach((emoji, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'bird-opt-btn' + (i === myBirdIdx ? ' selected' : '');
+    btn.textContent = emoji;
+    btn.addEventListener('click', () => {
+      myBirdIdx = i;
+      renderBirdPicker();
+      channel?.track({ name: myName, isHost, birdIdx: myBirdIdx });
+    });
+    row.appendChild(btn);
+  });
+  document.getElementById('lobby-bird-picker').classList.remove('hidden');
+}
+
 // ─── Lobby rendering ──────────────────────────────────────────────────────────
 function renderLobbyUI() {
   const grid    = document.getElementById('lobby-players');
@@ -53,7 +71,7 @@ function renderLobbyUI() {
       slot.className = 'player-slot filled';
       slot.style.borderColor = hexColor(PLAYER_COLORS[i]);
       slot.innerHTML = `
-        <div class="slot-bird">${BIRD_EMOJIS[i]}</div>
+        <div class="slot-bird">${BIRD_EMOJIS[info.birdIdx ?? i]}</div>
         <div class="slot-name">${info.name}</div>
         ${info.isHost ? '<div class="slot-host">👑 Host</div>' : ''}`;
     } else {
@@ -79,7 +97,9 @@ function syncPresence(presenceMap) {
   for (const [id, arr] of Object.entries(presenceMap)) {
     const info = arr[0];
     if (!lobbyPlayers[id]) {
-      lobbyPlayers[id] = { name: info.name, isHost: info.isHost };
+      lobbyPlayers[id] = { name: info.name, isHost: info.isHost, birdIdx: info.birdIdx ?? 0 };
+    } else {
+      lobbyPlayers[id].birdIdx = info.birdIdx ?? lobbyPlayers[id].birdIdx ?? 0;
     }
     seen.add(id);
   }
@@ -132,7 +152,7 @@ function openChannel(code) {
   return new Promise(resolve => {
     channel.subscribe(async status => {
       if (status === 'SUBSCRIBED') {
-        await channel.track({ name: myName, isHost });
+        await channel.track({ name: myName, isHost, birdIdx: myBirdIdx });
         resolve();
       }
     });
@@ -154,6 +174,7 @@ async function createRoom() {
   document.getElementById('lobby-guest-msg').classList.add('hidden');
   applyLevel('medium');
   renderLobbyUI();
+  renderBirdPicker();
   showScreen('screen-lobby');
 }
 
@@ -167,6 +188,7 @@ async function joinRoom(code) {
   document.getElementById('lobby-host-controls').classList.add('hidden');
   document.getElementById('lobby-guest-msg').classList.remove('hidden');
   renderLobbyUI();
+  renderBirdPicker();
   showScreen('screen-lobby');
 }
 
@@ -179,7 +201,7 @@ function buildGamePlayers() {
       name: info.name,
       color: PLAYER_COLORS[i % PLAYER_COLORS.length],
       colorIndex: i,
-      emoji: BIRD_EMOJIS[i % BIRD_EMOJIS.length],
+      emoji: BIRD_EMOJIS[info.birdIdx ?? (i % BIRD_EMOJIS.length)],
       x: 150, y: CANVAS_H / 2, vy: 0, alive: true, score: 0,
     };
     i++;

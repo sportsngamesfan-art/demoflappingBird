@@ -123,6 +123,19 @@ input[type="text"].uppercase { text-transform: uppercase; letter-spacing: 4px; }
 .btn-row { display: flex; gap: .75rem; flex-wrap: wrap; }
 .btn-row .btn { flex: 1; }
 
+/* ── Lobby Bird Picker ────────────────────────────── */
+.lobby-bird-picker { display:flex; flex-direction:column; gap:.5rem; align-items:center; margin:.5rem 0; }
+.picker-label { font-size:.75rem; font-weight:700; color:rgba(255,255,255,.55); text-transform:uppercase; letter-spacing:1px; }
+.bird-options { display:flex; gap:.5rem; flex-wrap:wrap; justify-content:center; }
+.bird-opt-btn {
+  width:48px; height:48px; border-radius:12px;
+  background:rgba(255,255,255,.08); border:2px solid rgba(255,255,255,.15);
+  font-size:1.6rem; cursor:pointer; transition:all .15s;
+  display:flex; align-items:center; justify-content:center;
+}
+.bird-opt-btn:hover { background:rgba(255,255,255,.18); border-color:rgba(255,255,255,.4); transform:scale(1.1); }
+.bird-opt-btn.selected { border-color:var(--yellow); background:rgba(255,215,0,.15); box-shadow:0 0 12px rgba(255,215,0,.3); transform:scale(1.1); }
+
 /* ── Lobby ────────────────────────────────────────── */
 .lobby-header { text-align: center; }
 .code-badge {
