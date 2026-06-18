@@ -82,8 +82,12 @@ export class FlappyGame {
     const ctx = this._ctx;
     const W = this._canvas.width, H = this._canvas.height;
 
-    // Clear
-    ctx.clearRect(0, 0, W, H);
+    // Fill entire canvas with sky gradient (covers letterbox areas outside game rect)
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+    skyGrad.addColorStop(0, '#5BA3D9');
+    skyGrad.addColorStop(1, '#A8D8F0');
+    ctx.fillStyle = skyGrad;
+    ctx.fillRect(0, 0, W, H);
 
     // Apply scale + centering transform
     ctx.save();
@@ -170,14 +174,14 @@ export class FlappyGame {
       ctx.translate(p.x, p.y);
       ctx.rotate(tilt);
 
-      // Bird shadow
-      ctx.fillStyle = 'rgba(0,0,0,0.15)';
+      // White badge behind emoji (makes bird pop on any background)
+      ctx.fillStyle = 'rgba(255,255,255,0.92)';
       ctx.beginPath();
-      ctx.ellipse(2, 12, 14, 5, 0, 0, Math.PI * 2);
+      ctx.arc(0, 0, 17, 0, Math.PI * 2);
       ctx.fill();
 
       // Emoji
-      ctx.font = '28px serif';
+      ctx.font = '26px serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(p.emoji || '🐦', 0, 0);
