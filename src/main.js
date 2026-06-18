@@ -586,12 +586,7 @@ function initDrawer() {
 }
 
 function animateHomeEntrance() {
-  gsap.from('.ott-topbar',         { y: -20, opacity: 0, duration: .4,  ease: 'power2.out' });
-  gsap.from('.ott-hero__content',  { y: 24,  opacity: 0, duration: .55, delay: .1,  ease: 'power2.out' });
-  gsap.from('.ott-row',            { y: 22,  opacity: 0, duration: .42, stagger: .1, delay: .25, ease: 'power2.out' });
-  gsap.from('.ott-card',           { y: 28,  opacity: 0, duration: .38, stagger: .05, delay: .4, ease: 'power2.out' });
-  gsap.from('.ott-ticker',         { y: 14,  opacity: 0, duration: .35, delay: .7,  ease: 'power2.out' });
-  gsap.from('.ott-drawer__toggle', { scale: 0, opacity: 0, duration: .4, delay: .75, ease: 'back.out(1.5)' });
+  // CSS fadeIn on .screen handles the entrance — no GSAP opacity overrides here
 }
 
 // ─── Event listeners ──────────────────────────────────────────────────────────
