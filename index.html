@@ -4,31 +4,155 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Social Games</title>
-  <link rel="stylesheet" href="/src/style.css" />
+  <link rel="stylesheet" href="/src/styles/main.css" />
 </head>
 <body>
 
+  <!-- ── Universal Nav ─────────────────────────────────── -->
+  <div id="global-nav" class="hidden">
+    <button id="nav-btn-home" class="nav-btn hidden">🏠 Home</button>
+    <button id="nav-btn-exit" class="nav-btn hidden">⎋ Exit</button>
+  </div>
+
+  <!-- ── Game HUD overlay ───────────────────────────────── -->
+  <div id="game-hud-overlay" class="hidden">
+    <span id="hud-player-name"></span>
+    <span id="hud-player-score"></span>
+  </div>
+
+  <!-- ── Exit Confirm Modal ─────────────────────────────── -->
+  <div id="exit-modal" class="exit-modal hidden">
+    <div class="exit-modal-card">
+      <h2>Game Paused</h2>
+      <div class="btn-row" style="width:100%">
+        <button id="exit-modal-resume" class="btn btn-primary">▶ Resume</button>
+        <button id="exit-modal-quit" class="btn btn-secondary">🏠 Quit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Create Room Modal ────────────────────────────── -->
+  <div id="create-room-modal" class="qm-modal hidden">
+    <div class="qm-card">
+      <h2 class="qm-title">Create Room</h2>
+      <p class="qm-subtitle">Choose a game to host</p>
+      <div class="qm-game-grid">
+        <button class="qm-game-btn" data-game="flappy"><span class="qm-icon">🐦</span><span class="qm-label">Flappy Bird</span></button>
+        <button class="qm-game-btn" data-game="reaction"><span class="qm-icon">⚡</span><span class="qm-label">Reaction Tap</span></button>
+        <button class="qm-game-btn" data-game="shooter"><span class="qm-icon">🔫</span><span class="qm-label">Shooter</span></button>
+        <button class="qm-game-btn" data-game="pacman"><span class="qm-icon">👻</span><span class="qm-label">Pac-Man</span></button>
+      </div>
+      <div id="create-room-result" class="qm-result hidden">
+        <p class="qm-code-label">Room Code</p>
+        <div class="qm-code-display" id="create-room-code"></div>
+        <button class="btn btn-accent qm-copy-btn" id="create-room-copy">📋 Copy Invite Link</button>
+        <button class="btn btn-primary qm-goto-btn" id="create-room-goto">▶ Go to Lobby</button>
+      </div>
+      <button class="btn btn-ghost qm-close" id="create-room-close">✕ Close</button>
+    </div>
+  </div>
+
+  <!-- ── Join Room Modal ───────────────────────────────── -->
+  <div id="join-room-modal" class="qm-modal hidden">
+    <div class="qm-card">
+      <h2 class="qm-title">Join Room</h2>
+      <p class="qm-subtitle">Enter the 4-letter room code</p>
+      <input type="text" id="qm-join-code" class="uppercase" placeholder="ABCD" maxlength="4" />
+      <p id="qm-join-error" class="error-msg"></p>
+      <button class="btn btn-primary btn-big" id="qm-join-btn">▶ Join</button>
+      <button class="btn btn-ghost qm-close" id="join-room-close">✕ Close</button>
+    </div>
+  </div>
+
   <!-- ── Home ─────────────────────────────────────────── -->
   <div id="screen-home" class="screen">
-    <div class="title-wrap">
-      <div class="title-bird">🎮</div>
-      <h1>SOCIAL GAMES</h1>
-      <p class="subtitle">Pick a game and play with friends</p>
-    </div>
-    <div class="game-card-grid">
-      <div class="game-card" id="card-flappy">
-        <div class="game-card-icon">🐦</div>
-        <div class="game-card-title">Flappy Bird</div>
-        <div class="game-card-desc">Multiplayer party mode · Up to 6 players</div>
-        <div class="game-card-tag">MULTIPLAYER</div>
+    <canvas id="home-bg-canvas"></canvas>
+    <div class="home-content">
+
+      <!-- Hero -->
+      <div class="home-hero">
+        <div class="home-logo">🎮</div>
+        <h1 class="home-title">SOCIAL GAMES <span class="tag">BETA</span></h1>
+        <p class="home-subtitle">Pick a game and play with friends</p>
+        <div class="home-badges">
+          <span class="home-badge">🎮 <span id="online-count">124</span> players online</span>
+          <span class="home-badge">⚡ Play instantly with friends</span>
+        </div>
       </div>
-      <div class="game-card" id="card-reaction">
-        <div class="game-card-icon">⚡</div>
-        <div class="game-card-title">Reaction Tap</div>
-        <div class="game-card-desc">Test your reflexes · Global leaderboard</div>
-        <div class="game-card-tag">ARCADE</div>
+
+      <!-- Quick Actions -->
+      <div class="quick-actions">
+        <button class="btn btn-primary qa-btn" id="qa-create">🏠 Create Room</button>
+        <button class="btn btn-secondary qa-btn" id="qa-join">🔗 Join Room</button>
+        <button class="btn btn-accent qa-btn" id="qa-quickmatch">⚡ Quick Match</button>
       </div>
+
+      <!-- Game Carousel -->
+      <div class="carousel-section">
+        <h3 class="carousel-heading">All Games</h3>
+        <div class="game-carousel">
+          <div class="game-card-lg" id="card-flappy-carousel">
+            <div class="gcl-art">🐦</div>
+            <div class="gcl-body">
+              <div class="gcl-title">Flappy Bird</div>
+              <div class="gcl-desc">Multiplayer · Up to 6 players · Race to survive</div>
+              <div class="gcl-footer">
+                <span class="gcl-online">👥 <span>34</span></span>
+                <span class="gcl-tag">MULTI</span>
+              </div>
+              <button class="btn btn-primary gcl-play">▶ Play Now</button>
+            </div>
+          </div>
+          <div class="game-card-lg" id="card-reaction">
+            <div class="gcl-art">⚡</div>
+            <div class="gcl-body">
+              <div class="gcl-title">Reaction Tap</div>
+              <div class="gcl-desc">Test your reflexes · Solo · 5 rounds</div>
+              <div class="gcl-footer">
+                <span class="gcl-online">👥 <span>12</span></span>
+                <span class="gcl-tag">SOLO</span>
+              </div>
+              <button class="btn btn-primary gcl-play">▶ Play Now</button>
+            </div>
+          </div>
+          <div class="game-card-lg" id="card-shooter">
+            <div class="gcl-art">🔫</div>
+            <div class="gcl-body">
+              <div class="gcl-title">Shooter</div>
+              <div class="gcl-desc">Co-op run &amp; gun · 1–2 players</div>
+              <div class="gcl-footer">
+                <span class="gcl-online">👥 <span>8</span></span>
+                <span class="gcl-tag">CO-OP</span>
+              </div>
+              <button class="btn btn-primary gcl-play">▶ Play Now</button>
+            </div>
+          </div>
+          <div class="game-card-lg" id="card-pacman">
+            <div class="gcl-art">👻</div>
+            <div class="gcl-body">
+              <div class="gcl-title">Pac-Man</div>
+              <div class="gcl-desc">Classic arcade · 3 modes · 3 themes</div>
+              <div class="gcl-footer">
+                <span class="gcl-online">👥 <span>21</span></span>
+                <span class="gcl-tag">SOLO</span>
+              </div>
+              <button class="btn btn-primary gcl-play">▶ Play Now</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Social Activity Panel -->
+      <div class="activity-panel">
+        <h3 class="activity-heading">🟢 Live Activity</h3>
+        <div id="activity-feed" class="activity-feed"></div>
+      </div>
+
     </div>
+
+    <!-- 3D lobby canvas (opt-in toggle, kept for compatibility) -->
+    <button id="btn-lobby-toggle" class="btn btn-ghost hidden">🎮 3D View</button>
+    <canvas id="lobby-canvas" class="hidden"></canvas>
   </div>
 
   <!-- ── Flappy Bird Landing ───────────────────────────── -->
@@ -61,6 +185,10 @@
       <p id="lobby-status">Waiting for players…</p>
     </div>
     <div id="lobby-players" class="player-grid"></div>
+    <div id="lobby-bird-picker" class="lobby-bird-picker hidden">
+      <p class="picker-label">Your bird</p>
+      <div id="bird-options-row" class="bird-options"></div>
+    </div>
     <div id="lobby-host-controls" class="hidden">
       <div class="level-picker">
         <span>Difficulty:</span>
@@ -157,6 +285,159 @@
         <tbody id="rt-lb-body"></tbody>
       </table>
       <button id="btn-rt-lb-back" class="btn btn-ghost">← Back</button>
+    </div>
+  </div>
+
+  <!-- ── Shooter Landing ───────────────────────────────── -->
+  <div id="screen-shooter-landing" class="screen">
+    <div class="title-wrap">
+      <div class="title-bird">🔫</div>
+      <h1>SHOOTER</h1>
+      <p class="subtitle">Run, jump, and blast enemies — solo or co-op!</p>
+    </div>
+    <div class="card">
+      <input id="sh-name" type="text" placeholder="Your name" maxlength="16" />
+      <button id="btn-sh-solo" class="btn btn-primary btn-big">▶ Solo</button>
+      <div class="btn-row">
+        <button id="btn-sh-coop" class="btn btn-accent">👥 Create Co-op</button>
+        <button id="btn-sh-join-show" class="btn btn-secondary">Join Room</button>
+      </div>
+      <div id="sh-join-form" class="hidden">
+        <input id="sh-join-code" type="text" placeholder="Room code (e.g. AB12)" maxlength="4" />
+        <button id="btn-sh-join" class="btn btn-accent">Join</button>
+      </div>
+      <button id="btn-sh-lb-show" class="btn btn-ghost">🏆 Leaderboard</button>
+      <button id="btn-sh-home" class="btn btn-ghost">← All Games</button>
+      <p id="sh-error" class="error-msg"></p>
+    </div>
+  </div>
+
+  <!-- ── Shooter Lobby ──────────────────────────────────── -->
+  <div id="screen-shooter-lobby" class="screen">
+    <div class="lobby-header">
+      <h2>Room <span id="sh-lobby-code" class="code-badge"></span></h2>
+      <p id="sh-lobby-status">Waiting for players…</p>
+    </div>
+    <div id="sh-lobby-players" class="player-grid" style="grid-template-columns:repeat(2,1fr);max-width:320px"></div>
+    <div id="sh-lobby-host-controls" class="hidden">
+      <button id="btn-sh-start" class="btn btn-primary btn-big">▶ Start Game</button>
+    </div>
+    <p id="sh-lobby-guest-msg" class="hidden muted">Waiting for host to start…</p>
+    <button id="btn-sh-lobby-home" class="btn btn-ghost">← All Games</button>
+  </div>
+
+  <!-- ── Shooter Game ───────────────────────────────────── -->
+  <div id="screen-shooter-game" class="screen">
+    <canvas id="sh-canvas"></canvas>
+    <div class="sh-touch-controls">
+      <div style="display:flex;gap:.5rem">
+        <button class="sh-touch-btn" data-action="left">◀</button>
+        <button class="sh-touch-btn" data-action="right">▶</button>
+      </div>
+      <div style="display:flex;gap:.5rem">
+        <button class="sh-touch-btn" data-action="jump">↑</button>
+        <button class="sh-touch-btn" data-action="shoot">🔫</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Shooter Game Over ─────────────────────────────── -->
+  <div id="screen-shooter-gameover" class="screen">
+    <div class="card gameover-card">
+      <h2>Game Over!</h2>
+      <div id="sh-results-list" class="results-list"></div>
+      <div class="btn-row">
+        <button id="btn-sh-restart" class="btn btn-primary">▶ Restart</button>
+        <button id="btn-sh-gameover-home" class="btn btn-ghost">← All Games</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Shooter Leaderboard ───────────────────────────── -->
+  <div id="screen-shooter-lb" class="screen">
+    <div class="card lb-card">
+      <h2>🔫 Shooter — Top Scores</h2>
+      <table id="sh-lb-table">
+        <thead><tr><th>#</th><th>Player</th><th>Score</th></tr></thead>
+        <tbody id="sh-lb-body"></tbody>
+      </table>
+      <button id="btn-sh-lb-back" class="btn btn-ghost">← Back</button>
+    </div>
+  </div>
+
+  <!-- ── Pac-Man Landing ──────────────────────────────── -->
+  <div id="screen-pacman-landing" class="screen">
+    <div class="card">
+      <h2>👻 PAC-MAN</h2>
+      <input type="text" id="pacman-name" placeholder="Your name" maxlength="20" />
+      <p id="pacman-error" class="error-msg"></p>
+
+      <div class="pm-picker-section">
+        <p class="pm-picker-label">Game Mode</p>
+        <div class="pm-picker-row">
+          <button class="pm-pick-btn active" data-pm-mode="classic">▶ Classic</button>
+          <button class="pm-pick-btn" data-pm-mode="endless">♾ Endless</button>
+          <button class="pm-pick-btn" data-pm-mode="timeattack">⏱ Time Attack</button>
+        </div>
+      </div>
+
+      <div class="pm-picker-section">
+        <p class="pm-picker-label">Visual Theme</p>
+        <div class="pm-picker-row">
+          <button class="pm-pick-btn pm-theme-classic active" data-pm-theme="classic">🔵 Classic</button>
+          <button class="pm-pick-btn pm-theme-neon" data-pm-theme="neon">🟣 Neon</button>
+          <button class="pm-pick-btn pm-theme-fire" data-pm-theme="fire">🔴 Fire</button>
+        </div>
+      </div>
+
+      <button id="btn-pacman-play" class="btn btn-primary btn-big">▶ Play</button>
+      <div class="btn-row">
+        <button id="btn-pacman-lb-show" class="btn btn-ghost">🏆 Leaderboard</button>
+        <button id="btn-pacman-home" class="btn btn-ghost">← Home</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Pac-Man Game ──────────────────────────────────── -->
+  <div id="screen-pacman-game" class="screen">
+    <canvas id="pm-canvas"></canvas>
+  </div>
+
+  <!-- ── Pac-Man Game Over ─────────────────────────────── -->
+  <div id="screen-pacman-gameover" class="screen">
+    <div class="card gameover-card">
+      <h2>👻 Game Over!</h2>
+      <div class="result-row">
+        <span class="result-rank gold">🏆</span>
+        <span class="result-name">Score</span>
+        <span id="pm-gameover-score" class="result-score">0</span>
+      </div>
+      <div class="result-row">
+        <span class="result-rank">📊</span>
+        <span class="result-name">Level</span>
+        <span id="pm-gameover-level" class="result-score">1</span>
+      </div>
+      <div class="result-row">
+        <span class="result-rank">🎮</span>
+        <span class="result-name">Mode</span>
+        <span id="pm-gameover-mode" class="result-score">Classic</span>
+      </div>
+      <div class="btn-row">
+        <button id="btn-pacman-play-again" class="btn btn-primary">▶ Play Again</button>
+        <button id="btn-pacman-gameover-home" class="btn btn-ghost">← Home</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Pac-Man Leaderboard ───────────────────────────── -->
+  <div id="screen-pacman-lb" class="screen">
+    <div class="card lb-card">
+      <h2>👻 Pac-Man — Top Scores</h2>
+      <table id="pm-lb-table" style="width:100%;border-collapse:collapse;font-size:.95rem">
+        <thead><tr><th>#</th><th>Player</th><th>Score</th><th>Mode</th></tr></thead>
+        <tbody id="pm-lb-body"></tbody>
+      </table>
+      <button id="btn-pacman-lb-back" class="btn btn-ghost">← Back</button>
     </div>
   </div>
 

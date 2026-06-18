@@ -1,11 +1,17 @@
-import { FlappyGame } from './game/Game.js';
-import { supabase, showScreen, genCode, hexColor, PLAYER_COLORS, RANK_MEDALS, submitScore } from './shared.js';
+import { FlappyGame } from './games/flappy/FlappyGame.js';
+import { supabase, showScreen, genCode, hexColor, PLAYER_COLORS, RANK_MEDALS, submitScore } from './core/shared.js';
 import { initReactionTap } from './games/reaction-tap/reaction-tap.js';
+import { initShooter } from './games/shooter/shooter.js';
+import { initPacman } from './games/pacman/pacman.js';
+import { initHomeBg } from './home-bg.js';
+import { gsap } from 'gsap';
+import { initNav, updateGameHUD } from './nav.js';
+import { initLobby3D, destroyLobby3D } from './lobby3d.js';
 
 // ─── Physics constants ────────────────────────────────────────────────────────
 const GRAVITY     = 0.45;
 const FLAP_FORCE  = -8.5;
-const BIRD_RADIUS = 14;
+const BIRD_RADIUS = 17;
 const CANVAS_W    = 800;
 const CANVAS_H    = 600;
 const PIPE_WIDTH  = 60;
@@ -20,8 +26,9 @@ const BIRD_EMOJIS = ['🐦', '🐧', '🦜', '🦚', '🦉', '🦅'];
 
 // ─── App state ────────────────────────────────────────────────────────────────
 const myId = crypto.randomUUID();
-let myName = '';
-let isHost = false;
+let myName   = '';
+let isHost   = false;
+let myBirdIdx = 0;
 let level  = 'medium';
 let channel = null;
 let game    = null;
@@ -36,6 +43,24 @@ let hostState = null;
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function setError(msg) { document.getElementById('landing-error').textContent = msg; }
 
+function renderBirdPicker() {
+  const row = document.getElementById('bird-options-row');
+  row.innerHTML = '';
+  BIRD_EMOJIS.forEach((emoji, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'bird-opt-btn' + (i === myBirdIdx ? ' selected' : '');
+    btn.textContent = emoji;
+    btn.addEventListener('click', () => {
+      myBirdIdx = i;
+      if (lobbyPlayers[myId]) lobbyPlayers[myId].birdIdx = myBirdIdx;
+      renderBirdPicker();
+      channel?.track({ name: myName, isHost, birdIdx: myBirdIdx });
+    });
+    row.appendChild(btn);
+  });
+  document.getElementById('lobby-bird-picker').classList.remove('hidden');
+}
+
 // ─── Lobby rendering ──────────────────────────────────────────────────────────
 function renderLobbyUI() {
   const grid    = document.getElementById('lobby-players');
@@ -49,7 +74,7 @@ function renderLobbyUI() {
       slot.className = 'player-slot filled';
       slot.style.borderColor = hexColor(PLAYER_COLORS[i]);
       slot.innerHTML = `
-        <div class="slot-bird">${BIRD_EMOJIS[i]}</div>
+        <div class="slot-bird">${BIRD_EMOJIS[info.birdIdx ?? i]}</div>
         <div class="slot-name">${info.name}</div>
         ${info.isHost ? '<div class="slot-host">👑 Host</div>' : ''}`;
     } else {
@@ -75,7 +100,9 @@ function syncPresence(presenceMap) {
   for (const [id, arr] of Object.entries(presenceMap)) {
     const info = arr[0];
     if (!lobbyPlayers[id]) {
-      lobbyPlayers[id] = { name: info.name, isHost: info.isHost };
+      lobbyPlayers[id] = { name: info.name, isHost: info.isHost, birdIdx: info.birdIdx ?? 0 };
+    } else {
+      lobbyPlayers[id].birdIdx = info.birdIdx ?? lobbyPlayers[id].birdIdx ?? 0;
     }
     seen.add(id);
   }
@@ -128,7 +155,7 @@ function openChannel(code) {
   return new Promise(resolve => {
     channel.subscribe(async status => {
       if (status === 'SUBSCRIBED') {
-        await channel.track({ name: myName, isHost });
+        await channel.track({ name: myName, isHost, birdIdx: myBirdIdx });
         resolve();
       }
     });
@@ -139,7 +166,7 @@ function openChannel(code) {
 async function createRoom() {
   isHost = true;
   // Add self immediately so lobbyPlayers is never empty when host hits Start
-  lobbyPlayers[myId] = { name: myName, isHost: true };
+  lobbyPlayers[myId] = { name: myName, isHost: true, birdIdx: myBirdIdx };
 
   const code = genCode();
   await openChannel(code);
@@ -150,12 +177,13 @@ async function createRoom() {
   document.getElementById('lobby-guest-msg').classList.add('hidden');
   applyLevel('medium');
   renderLobbyUI();
+  renderBirdPicker();
   showScreen('screen-lobby');
 }
 
 async function joinRoom(code) {
   isHost = false;
-  lobbyPlayers[myId] = { name: myName, isHost: false };
+  lobbyPlayers[myId] = { name: myName, isHost: false, birdIdx: myBirdIdx };
 
   await openChannel(code.toUpperCase());
 
@@ -163,6 +191,7 @@ async function joinRoom(code) {
   document.getElementById('lobby-host-controls').classList.add('hidden');
   document.getElementById('lobby-guest-msg').classList.remove('hidden');
   renderLobbyUI();
+  renderBirdPicker();
   showScreen('screen-lobby');
 }
 
@@ -175,7 +204,7 @@ function buildGamePlayers() {
       name: info.name,
       color: PLAYER_COLORS[i % PLAYER_COLORS.length],
       colorIndex: i,
-      emoji: BIRD_EMOJIS[i % BIRD_EMOJIS.length],
+      emoji: BIRD_EMOJIS[info.birdIdx ?? (i % BIRD_EMOJIS.length)],
       x: 150, y: CANVAS_H / 2, vy: 0, alive: true, score: 0,
     };
     i++;
@@ -210,8 +239,10 @@ async function hostStartGame() {
     const gapY = 100 + Math.random() * (CANVAS_H - 200 - cfg.pipeGap);
     hostState.pipes.push({ x: CANVAS_W + 80, gapY, gap: cfg.pipeGap, passed: new Set() });
   };
-  setTimeout(spawnPipe, 1500);
-  hostState.pipeTimer = setInterval(spawnPipe, cfg.pipeInterval);
+  hostState.pipeTimer = setTimeout(() => {
+    spawnPipe();
+    hostState.pipeTimer = setInterval(spawnPipe, cfg.pipeInterval);
+  }, 1500);
   hostState.gameLoop  = setInterval(hostTick, 1000 / 30);
 
   // Tell guests to start rendering
@@ -322,12 +353,15 @@ function startRendering({ level: l, players }) {
 function updateHUD(players) {
   const container = document.getElementById('hud-scores');
   container.innerHTML = '';
-  Object.values(players).sort((a, b) => b.score - a.score).forEach(p => {
+  const sorted = Object.values(players).sort((a, b) => b.score - a.score);
+  sorted.forEach(p => {
     const div = document.createElement('div');
     div.className = 'hud-player' + (p.alive ? '' : ' hud-dead');
     div.innerHTML = `<span class="hud-dot" style="background:${hexColor(p.color)}"></span>${p.name}: ${p.score}`;
     container.appendChild(div);
   });
+  // Feed top player into universal HUD overlay
+  if (sorted.length) updateGameHUD({ name: sorted[0].name, score: sorted[0].score });
 }
 
 function renderGameOver(results) {
@@ -357,21 +391,50 @@ async function loadFlappyLeaderboard() {
   });
 }
 
+// ─── Activity feed ────────────────────────────────────────────────────────────
+const _ACT_NAMES = ['Ayan','Riaan','Siddharth','Priya','Lucas','Emma','James','Sofia','Noah','Mia'];
+const _ACT_GAMES = ['Flappy Bird','Pac-Man','Shooter','Reaction Tap'];
+const _ACT_VERBS = ['playing','in lobby for','just scored in','challenging friends in','started a room for'];
+
+function startActivityFeed() {
+  const feed = document.getElementById('activity-feed');
+  if (!feed) return;
+  function add() {
+    const name = _ACT_NAMES[Math.floor(Math.random() * _ACT_NAMES.length)];
+    const game = _ACT_GAMES[Math.floor(Math.random() * _ACT_GAMES.length)];
+    const verb = _ACT_VERBS[Math.floor(Math.random() * _ACT_VERBS.length)];
+    const away = Math.random() > 0.72;
+    const div = document.createElement('div');
+    div.className = 'activity-item';
+    div.innerHTML = `<span class="activity-dot${away ? ' away' : ''}"></span><span>${name} is ${verb} ${game}</span>`;
+    feed.prepend(div);
+    while (feed.children.length > 4) feed.lastChild.remove();
+  }
+  add();
+  setInterval(add, 3500);
+}
+
+function animateHomeEntrance() {
+  gsap.from('.home-hero',       { y: -18, opacity: 0, duration: .55, ease: 'power2.out' });
+  gsap.from('.quick-actions',   { y: 20,  opacity: 0, duration: .48, delay: .12, ease: 'power2.out' });
+  gsap.from('.featured-card',   { y: 28,  opacity: 0, duration: .52, delay: .22, ease: 'power2.out' });
+  gsap.from('.game-card-lg',    { y: 28,  opacity: 0, duration: .42, stagger: .09, delay: .32, ease: 'power2.out' });
+  gsap.from('.activity-panel',  { y: 18,  opacity: 0, duration: .38, delay: .60, ease: 'power2.out' });
+}
+
 // ─── Event listeners ──────────────────────────────────────────────────────────
 document.getElementById('btn-join-show').addEventListener('click', () =>
   document.getElementById('join-form').classList.toggle('hidden'));
 
 document.getElementById('btn-create').addEventListener('click', async () => {
-  myName = document.getElementById('landing-name').value.trim();
-  if (!myName) return setError('Enter your name first.');
+  myName = document.getElementById('landing-name').value.trim() || 'Player' + Math.floor(Math.random() * 999);
   setError('');
   await createRoom();
 });
 
 document.getElementById('btn-join').addEventListener('click', async () => {
-  myName = document.getElementById('landing-name').value.trim();
+  myName = document.getElementById('landing-name').value.trim() || 'Player' + Math.floor(Math.random() * 999);
   const code = document.getElementById('join-code').value.trim();
-  if (!myName) return setError('Enter your name first.');
   if (code.length < 4) return setError('Enter a 4-letter room code.');
   setError('');
   await joinRoom(code);
@@ -396,9 +459,129 @@ document.getElementById('btn-lb-back').addEventListener('click', () => showScree
 document.getElementById('btn-flappy-home').addEventListener('click', () => showScreen('screen-home'));
 
 // ─── Home screen ─────────────────────────────────────────────────────────────
-document.getElementById('card-flappy').addEventListener('click', () => showScreen('screen-landing'));
-document.getElementById('card-reaction').addEventListener('click', () => showScreen('screen-reaction-landing'));
+document.getElementById('card-flappy')?.addEventListener('click', () => showScreen('screen-landing'));
+document.getElementById('card-flappy-carousel')?.addEventListener('click', () => showScreen('screen-landing'));
+document.getElementById('card-reaction')?.addEventListener('click', () => showScreen('screen-reaction-landing'));
+document.getElementById('card-shooter')?.addEventListener('click', () => showScreen('screen-shooter-landing'));
+document.getElementById('card-pacman')?.addEventListener('click', () => showScreen('screen-pacman-landing'));
+
+// ─── Quick-action modals ──────────────────────────────────────────────────────
+const GAME_ROUTES = {
+  flappy:   () => showScreen('screen-landing'),
+  reaction: () => showScreen('screen-reaction-landing'),
+  shooter:  () => showScreen('screen-shooter-landing'),
+  pacman:   () => showScreen('screen-pacman-landing'),
+};
+
+function openCreateModal() {
+  document.getElementById('create-room-result').classList.add('hidden');
+  document.querySelectorAll('.qm-game-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('create-room-modal').classList.remove('hidden');
+}
+function closeCreateModal() { document.getElementById('create-room-modal').classList.add('hidden'); }
+function openJoinModal() {
+  document.getElementById('qm-join-code').value = '';
+  document.getElementById('qm-join-error').textContent = '';
+  document.getElementById('join-room-modal').classList.remove('hidden');
+}
+function closeJoinModal() { document.getElementById('join-room-modal').classList.add('hidden'); }
+
+let _pendingGameKey = null;
+
+document.querySelectorAll('.qm-game-btn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    document.querySelectorAll('.qm-game-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    _pendingGameKey = btn.dataset.game;
+    myName = myName || 'Player' + Math.floor(Math.random() * 999);
+    await createRoom();
+    const code = document.getElementById('lobby-code').textContent;
+    document.getElementById('create-room-code').textContent = code;
+    document.getElementById('create-room-result').classList.remove('hidden');
+  });
+});
+
+document.getElementById('create-room-copy')?.addEventListener('click', () => {
+  const code = document.getElementById('create-room-code').textContent;
+  const url = `${location.origin}${location.pathname}?join=${code}&game=${_pendingGameKey || 'flappy'}`;
+  navigator.clipboard.writeText(url).catch(() => {});
+  document.getElementById('create-room-copy').textContent = '✅ Copied!';
+  setTimeout(() => { document.getElementById('create-room-copy').textContent = '📋 Copy Invite Link'; }, 2000);
+});
+
+document.getElementById('create-room-goto')?.addEventListener('click', () => {
+  closeCreateModal();
+  // lobby is already open — screen-lobby was set by createRoom()
+});
+
+document.getElementById('create-room-close')?.addEventListener('click', closeCreateModal);
+document.getElementById('join-room-close')?.addEventListener('click', closeJoinModal);
+
+document.getElementById('qm-join-btn')?.addEventListener('click', async () => {
+  const code = document.getElementById('qm-join-code').value.trim().toUpperCase();
+  if (code.length < 4) { document.getElementById('qm-join-error').textContent = 'Enter a 4-letter code.'; return; }
+  myName = myName || 'Player' + Math.floor(Math.random() * 999);
+  closeJoinModal();
+  await joinRoom(code);
+});
+
+document.getElementById('qm-join-code')?.addEventListener('input', e => {
+  e.target.value = e.target.value.toUpperCase();
+});
+
+// Quick Actions
+document.getElementById('qa-create')?.addEventListener('click', openCreateModal);
+document.getElementById('qa-join')?.addEventListener('click', openJoinModal);
+document.getElementById('qa-quickmatch')?.addEventListener('click', async () => {
+  const games = Object.keys(GAME_ROUTES);
+  _pendingGameKey = games[Math.floor(Math.random() * games.length)];
+  myName = myName || 'Player' + Math.floor(Math.random() * 999);
+  await createRoom();
+});
+
+// URL invite-link auto-join (?join=CODE&game=flappy)
+(function checkInviteUrl() {
+  const p = new URLSearchParams(location.search);
+  const code = p.get('join'), game = p.get('game');
+  if (code && code.length === 4) {
+    myName = myName || 'Player' + Math.floor(Math.random() * 999);
+    _pendingGameKey = game || 'flappy';
+    joinRoom(code.toUpperCase());
+    history.replaceState({}, '', location.pathname);
+  }
+})();
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
+initNav();
 initReactionTap();
+initShooter(myId);
+initPacman();
+initHomeBg();
+startActivityFeed();
+animateHomeEntrance();
+
+// ─── 3D Lobby toggle ──────────────────────────────────────────────────────────
+let lobby3DActive = localStorage.getItem('lobbyMode') === '3d';
+const lobbyCanvas = document.getElementById('lobby-canvas');
+const lobbyToggle = document.getElementById('btn-lobby-toggle');
+
+function applyLobbyMode() {
+  if (lobby3DActive) {
+    lobbyCanvas?.classList.remove('hidden');
+    if (lobbyToggle) lobbyToggle.textContent = '◼ 2D View';
+    if (lobbyCanvas) initLobby3D(lobbyCanvas, screenId => showScreen(screenId));
+  } else {
+    lobbyCanvas?.classList.add('hidden');
+    if (lobbyToggle) lobbyToggle.textContent = '🎮 3D View';
+    destroyLobby3D();
+  }
+}
+
+lobbyToggle?.addEventListener('click', () => {
+  lobby3DActive = !lobby3DActive;
+  localStorage.setItem('lobbyMode', lobby3DActive ? '3d' : '2d');
+  applyLobbyMode();
+});
+
+applyLobbyMode();
 showScreen('screen-home');

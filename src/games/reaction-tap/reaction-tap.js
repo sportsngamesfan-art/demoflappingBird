@@ -1,4 +1,4 @@
-import { showScreen, submitScore, loadLeaderboard } from '../../shared.js';
+import { showScreen, submitScore, loadLeaderboard } from '../../core/shared.js';
 
 const ROUNDS = 5;
 const PENALTY_MS = 1000;

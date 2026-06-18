@@ -11,6 +11,8 @@ export const RANK_MEDALS   = ['🥇', '🥈', '🥉'];
 export function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  // Notify nav overlay — lazy import avoids circular dep
+  import('../nav.js').then(m => m.setNavContext(id)).catch(() => {});
 }
 
 export function genCode() {
