@@ -81,6 +81,7 @@ export class PacmanGame {
     this._fruitSpawned = [false, false];
     this._timer = mode === 'timeattack' ? 180 : 0; // countdown for time attack
     this._lastT = null;
+    this._ended = false;
 
     this._initPacman();
     this._resize();
@@ -123,6 +124,7 @@ export class PacmanGame {
   resume() { this._paused = false; this._lastT = performance.now(); }
 
   destroy() {
+    this._ended = true;
     if (this._raf) { cancelAnimationFrame(this._raf); this._raf = null; }
     window.removeEventListener('keydown', this._onKey);
     window.removeEventListener('resize', this._resizeBound);
@@ -131,9 +133,11 @@ export class PacmanGame {
   }
 
   _loop(t) {
+    if (this._ended) return;
     const dt = Math.min((t - this._lastT) / 1000, 0.05);
     this._lastT = t;
     this._tick(dt);
+    if (this._ended) return; // _tick may have ended the game this frame
     this._render();
     this._raf = requestAnimationFrame(ts => this._loop(ts));
   }
@@ -387,6 +391,7 @@ export class PacmanGame {
   }
 
   _gameOver() {
+    this._ended = true;
     this.destroy();
     this._onEnd({ score: this._score, level: this._level });
   }
