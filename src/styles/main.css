@@ -550,7 +550,10 @@ input[type="text"].uppercase { text-transform: uppercase; letter-spacing: 4px; }
   align-items: start;
   gap: 1.5rem;
 }
-@media (max-width: 800px) {
+@media (max-width: 760px) and (min-width: 520px) {
+  .home-content { grid-template-columns: 1fr 240px; }
+}
+@media (max-width: 519px) {
   .home-content { grid-template-columns: 1fr; padding: 1rem; }
   .home-right { order: 3; }
 }
