@@ -50,6 +50,7 @@ export class Ghost {
     this._modePhase = 0;
     this._frightenTimer = 0;
     this._exitPhase = 0;
+    this._snapCol = -1; this._snapRow = -1;
   }
 
   respawn() {
@@ -212,7 +213,10 @@ export class Ghost {
     const cy = row * CELL + CELL / 2;
     const step = this.speed * dt;
 
-    if (Math.abs(this.x - cx) <= step + 0.5 && Math.abs(this.y - cy) <= step + 0.5) {
+    // Direction decision fires once per tile
+    if ((col !== this._snapCol || row !== this._snapRow) &&
+        Math.abs(this.x - cx) <= step + 1 && Math.abs(this.y - cy) <= step + 1) {
+      this._snapCol = col; this._snapRow = row;
       this.x = cx; this.y = cy;
 
       let newDir;

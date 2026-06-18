@@ -101,6 +101,7 @@ export class PacmanGame {
       speed: PACMAN_SPEED_BASE * (1 + (this._level - 1) * 0.05),
       alive: true,
       mouthT: 0,
+      _snapCol: -1, _snapRow: -1, // tile where last direction decision was made
     };
   }
 
@@ -207,30 +208,35 @@ export class PacmanGame {
     const pm = this._pm;
     const step = pm.speed * dt;
 
+    if (pm.x < -CELL / 2) { pm.x = COLS * CELL + CELL / 2; return; }
+    if (pm.x > COLS * CELL + CELL / 2) { pm.x = -CELL / 2; return; }
+
     const col = Math.floor(pm.x / CELL);
     const row = Math.floor(pm.y / CELL);
     const cx = col * CELL + CELL / 2;
     const cy = row * CELL + CELL / 2;
 
-    // At tile centre: apply buffered direction, stop if still blocked
-    if (Math.abs(pm.x - cx) <= step + 0.5 && Math.abs(pm.y - cy) <= step + 0.5) {
+    // Block 1: direction decision when entering a new tile (fires once per tile)
+    if ((col !== pm._snapCol || row !== pm._snapRow) &&
+        Math.abs(pm.x - cx) <= step + 1 && Math.abs(pm.y - cy) <= step + 1) {
+      pm._snapCol = col; pm._snapRow = row;
       pm.x = cx; pm.y = cy;
+      if (this._maze.canMove(cx, cy, pm.nextDir)) pm.dir = pm.nextDir;
+    }
+
+    // Block 2: stop check — fires every frame while sitting at a tile centre
+    if (Math.abs(pm.x - cx) < 0.5 && Math.abs(pm.y - cy) < 0.5) {
+      // Re-check buffered direction so player can unstick by pressing a key
       if (this._maze.canMove(cx, cy, pm.nextDir)) pm.dir = pm.nextDir;
       if (!this._maze.canMove(cx, cy, pm.dir)) {
         pm.mouthT += dt;
-        return; // stopped at wall — wait for valid input
+        return;
       }
     }
 
     pm.x += DX[pm.dir] * step;
     pm.y += DY[pm.dir] * step;
     pm.mouthT += dt;
-
-    // Horizontal tunnel wrap
-    if (pm.x < -CELL / 2) pm.x = COLS * CELL + CELL / 2;
-    if (pm.x > COLS * CELL + CELL / 2) pm.x = -CELL / 2;
-
-    // Hard vertical clamp
     pm.y = Math.max(CELL / 2, Math.min(pm.y, ROWS * CELL - CELL / 2));
   }
 
