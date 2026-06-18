@@ -537,12 +537,12 @@ input[type="text"].uppercase { text-transform: uppercase; letter-spacing: 4px; }
   position: fixed; inset: 0; z-index: 0; pointer-events: none;
 }
 #screen-home {
-  overflow-y: auto; align-items: flex-start; padding: 0;
+  overflow-y: auto; align-items: center; padding: 0;
   min-height: 100vh;
 }
 .home-content {
   position: relative; z-index: 1;
-  width: min(700px, 96vw);
+  width: min(860px, 96vw);
   margin: 0 auto;
   padding: 1.5rem 0 3rem;
   display: flex; flex-direction: column; gap: 1.4rem;
@@ -565,15 +565,31 @@ input[type="text"].uppercase { text-transform: uppercase; letter-spacing: 4px; }
 
 /* Game Carousel */
 .carousel-heading { font-family:'Fredoka One',cursive; font-size:1.1rem; color:rgba(255,255,255,.75); margin-bottom:.7rem; }
+.carousel-wrapper {
+  position: relative;
+}
+.carousel-btn {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  z-index: 10;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(255,255,255,.15); border: 1.5px solid rgba(255,255,255,.28);
+  color: #fff; font-size: 1.25rem; line-height: 1;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background .18s, transform .18s;
+  padding: 0;
+}
+.carousel-btn:hover { background: rgba(255,215,0,.35); border-color: var(--yellow); }
+.carousel-btn.prev { left: -18px; }
+.carousel-btn.next { right: -18px; }
+.carousel-btn:disabled { opacity: .3; pointer-events: none; }
 .game-carousel {
   display:flex; gap:1rem; overflow-x:auto; scroll-snap-type:x mandatory;
-  padding-bottom:.5rem;
-  scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.18) transparent;
+  padding-bottom:.5rem; scroll-behavior: smooth;
+  scrollbar-width:none;
 }
-.game-carousel::-webkit-scrollbar { height:4px; }
-.game-carousel::-webkit-scrollbar-thumb { background:rgba(255,255,255,.18); border-radius:2px; }
+.game-carousel::-webkit-scrollbar { display: none; }
 .game-card-lg {
-  flex:0 0 195px; scroll-snap-align:start;
+  flex:0 0 185px; scroll-snap-align:start;
   background:rgba(255,255,255,.07); border:1.5px solid rgba(255,255,255,.11);
   border-radius:18px; overflow:hidden; cursor:pointer;
   transition:transform .22s, border-color .22s, box-shadow .22s;

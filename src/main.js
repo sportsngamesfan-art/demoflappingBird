@@ -467,6 +467,23 @@ document.getElementById('card-shooter')?.addEventListener('click', () => showScr
 document.getElementById('card-pacman')?.addEventListener('click', () => showScreen('screen-pacman-landing'));
 document.getElementById('card-chess')?.addEventListener('click', () => showScreen('screen-chess-landing'));
 
+// ─── Carousel scroll buttons ──────────────────────────────────────────────────
+(function initCarousel() {
+  const carousel = document.getElementById('game-carousel');
+  const btnPrev  = document.getElementById('carousel-prev');
+  const btnNext  = document.getElementById('carousel-next');
+  if (!carousel || !btnPrev || !btnNext) return;
+  const SCROLL_BY = 201; // card width (185) + gap (16)
+  function updateBtns() {
+    btnPrev.disabled = carousel.scrollLeft <= 4;
+    btnNext.disabled = carousel.scrollLeft + carousel.clientWidth >= carousel.scrollWidth - 4;
+  }
+  btnPrev.addEventListener('click', () => { carousel.scrollBy({ left: -SCROLL_BY, behavior: 'smooth' }); });
+  btnNext.addEventListener('click', () => { carousel.scrollBy({ left:  SCROLL_BY, behavior: 'smooth' }); });
+  carousel.addEventListener('scroll', updateBtns, { passive: true });
+  updateBtns();
+})();
+
 // ─── Quick-action modals ──────────────────────────────────────────────────────
 const GAME_ROUTES = {
   flappy:   () => showScreen('screen-landing'),
