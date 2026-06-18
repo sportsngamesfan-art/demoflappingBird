@@ -36,8 +36,6 @@ export class Ghost {
 
     this.dir = DIR.LEFT;
     this.speed = 1.5 * CELL;
-    this._col = -1;
-    this._row = -1;
 
     this._reset();
   }
@@ -52,8 +50,6 @@ export class Ghost {
     this._modePhase = 0;
     this._frightenTimer = 0;
     this._exitPhase = 0;
-    this._col = -1;
-    this._row = -1;
   }
 
   respawn() {
@@ -147,7 +143,7 @@ export class Ghost {
       this._exitPhase = 0;
     }
 
-    const baseSpeed = CELL * (6 + (level - 1) * 0.3);
+    const baseSpeed = CELL * 4 * (1 + (level - 1) * 0.05);
     switch (this.mode) {
       case 'frightened': this.speed = baseSpeed * 0.5; break;
       case 'eaten':      this.speed = baseSpeed * 2.5; break;
@@ -216,30 +212,26 @@ export class Ghost {
     const cy = row * CELL + CELL / 2;
     const step = this.speed * dt;
 
-    // Decide direction only when entering a new tile
-    if (col !== this._col || row !== this._row) {
-      if (Math.abs(this.x - cx) <= step + 1 && Math.abs(this.y - cy) <= step + 1) {
-        this._col = col; this._row = row;
-        this.x = cx; this.y = cy;
+    if (Math.abs(this.x - cx) <= step + 0.5 && Math.abs(this.y - cy) <= step + 0.5) {
+      this.x = cx; this.y = cy;
 
-        let newDir;
-        if (this.mode === 'frightened') {
-          const valid = [];
-          const rev = (this.dir + 2) % 4;
-          for (let d = 0; d < 4; d++) {
-            if (d === rev) continue;
-            const nc = col + DX[d], nr = row + DY[d];
-            const t = maze.get(nc, nr);
-            if (t !== WALL && t !== GHOST_INT && t !== GHOST_DOOR) valid.push(d);
-          }
-          newDir = valid.length ? valid[Math.floor(Math.random() * valid.length)] : (this.dir + 2) % 4;
-        } else {
-          const target = this._getTarget(pacman, blinky);
-          newDir = this._chooseDirection(maze, target);
+      let newDir;
+      if (this.mode === 'frightened') {
+        const valid = [];
+        const rev = (this.dir + 2) % 4;
+        for (let d = 0; d < 4; d++) {
+          if (d === rev) continue;
+          const nc = col + DX[d], nr = row + DY[d];
+          const t = maze.get(nc, nr);
+          if (t !== WALL && t !== GHOST_INT && t !== GHOST_DOOR) valid.push(d);
         }
-
-        this.dir = newDir;
+        newDir = valid.length ? valid[Math.floor(Math.random() * valid.length)] : (this.dir + 2) % 4;
+      } else {
+        const target = this._getTarget(pacman, blinky);
+        newDir = this._chooseDirection(maze, target);
       }
+
+      this.dir = newDir;
     }
 
     this.x += DX[this.dir] * step;

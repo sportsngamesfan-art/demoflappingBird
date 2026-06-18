@@ -101,7 +101,6 @@ export class PacmanGame {
       speed: PACMAN_SPEED_BASE * (1 + (this._level - 1) * 0.05),
       alive: true,
       mouthT: 0,
-      _col: -1, _row: -1, // tile-tracking for direction changes
     };
   }
 
@@ -206,30 +205,25 @@ export class PacmanGame {
 
   _movePacman(dt) {
     const pm = this._pm;
-    const speed = pm.speed * dt;
+    const step = pm.speed * dt;
 
     const col = Math.floor(pm.x / CELL);
     const row = Math.floor(pm.y / CELL);
     const cx = col * CELL + CELL / 2;
     const cy = row * CELL + CELL / 2;
 
-    // On entering a new tile (or forced recheck via _col=-1): snap to center,
-    // apply buffered direction if valid, stop if blocked.
-    if (col !== pm._col || row !== pm._row) {
-      if (Math.abs(pm.x - cx) <= speed + 1 && Math.abs(pm.y - cy) <= speed + 1) {
-        pm._col = col; pm._row = row;
-        pm.x = cx; pm.y = cy;
-        if (this._maze.canMove(cx, cy, pm.nextDir)) pm.dir = pm.nextDir;
-        if (!this._maze.canMove(cx, cy, pm.dir)) {
-          pm._col = -1; // force recheck every frame until unblocked
-          pm.mouthT += dt;
-          return;
-        }
+    // At tile centre: apply buffered direction, stop if still blocked
+    if (Math.abs(pm.x - cx) <= step + 0.5 && Math.abs(pm.y - cy) <= step + 0.5) {
+      pm.x = cx; pm.y = cy;
+      if (this._maze.canMove(cx, cy, pm.nextDir)) pm.dir = pm.nextDir;
+      if (!this._maze.canMove(cx, cy, pm.dir)) {
+        pm.mouthT += dt;
+        return; // stopped at wall — wait for valid input
       }
     }
 
-    pm.x += DX[pm.dir] * speed;
-    pm.y += DY[pm.dir] * speed;
+    pm.x += DX[pm.dir] * step;
+    pm.y += DY[pm.dir] * step;
     pm.mouthT += dt;
 
     // Horizontal tunnel wrap
