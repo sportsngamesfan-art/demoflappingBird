@@ -2,6 +2,7 @@ import { FlappyGame } from './game/Game.js';
 import { supabase, showScreen, genCode, hexColor, PLAYER_COLORS, RANK_MEDALS, submitScore } from './shared.js';
 import { initReactionTap } from './games/reaction-tap/reaction-tap.js';
 import { initShooter } from './games/shooter/shooter.js';
+import { initPacman } from './games/pacman/pacman.js';
 
 // ─── Physics constants ────────────────────────────────────────────────────────
 const GRAVITY     = 0.45;
@@ -400,8 +401,10 @@ document.getElementById('btn-flappy-home').addEventListener('click', () => showS
 document.getElementById('card-flappy').addEventListener('click', () => showScreen('screen-landing'));
 document.getElementById('card-reaction').addEventListener('click', () => showScreen('screen-reaction-landing'));
 document.getElementById('card-shooter').addEventListener('click', () => showScreen('screen-shooter-landing'));
+document.getElementById('card-pacman').addEventListener('click', () => showScreen('screen-pacman-landing'));
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 initReactionTap();
 initShooter(myId);
+initPacman();
 showScreen('screen-home');

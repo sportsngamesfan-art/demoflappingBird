@@ -34,6 +34,12 @@
         <div class="game-card-desc">Co-op run &amp; gun · 1–2 players</div>
         <div class="game-card-tag">CO-OP</div>
       </div>
+      <div class="game-card" id="card-pacman">
+        <div class="game-card-icon">👻</div>
+        <div class="game-card-title">Pac-Man</div>
+        <div class="game-card-desc">Classic, Endless &amp; Time Attack modes</div>
+        <div class="game-card-tag">ARCADE</div>
+      </div>
     </div>
   </div>
 
@@ -240,6 +246,65 @@
         <tbody id="sh-lb-body"></tbody>
       </table>
       <button id="btn-sh-lb-back" class="btn btn-ghost">← Back</button>
+    </div>
+  </div>
+
+  <!-- ── Pac-Man Landing ──────────────────────────────── -->
+  <div id="screen-pacman-landing" class="screen">
+    <div class="card">
+      <h2>👻 PAC-MAN</h2>
+      <input type="text" id="pacman-name" placeholder="Your name" maxlength="20" />
+      <p id="pacman-error" class="error-msg"></p>
+      <button id="btn-pacman-classic" class="btn btn-primary btn-big">▶ Classic</button>
+      <button id="btn-pacman-endless" class="btn btn-accent btn-big">♾ Endless</button>
+      <button id="btn-pacman-timeattack" class="btn btn-secondary btn-big">⏱ Time Attack</button>
+      <div class="btn-row">
+        <button id="btn-pacman-lb-show" class="btn btn-ghost">🏆 Leaderboard</button>
+        <button id="btn-pacman-home" class="btn btn-ghost">← Home</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Pac-Man Game ──────────────────────────────────── -->
+  <div id="screen-pacman-game" class="screen">
+    <canvas id="pm-canvas"></canvas>
+  </div>
+
+  <!-- ── Pac-Man Game Over ─────────────────────────────── -->
+  <div id="screen-pacman-gameover" class="screen">
+    <div class="card gameover-card">
+      <h2>👻 Game Over!</h2>
+      <div class="result-row">
+        <span class="result-rank gold">🏆</span>
+        <span class="result-name">Score</span>
+        <span id="pm-gameover-score" class="result-score">0</span>
+      </div>
+      <div class="result-row">
+        <span class="result-rank">📊</span>
+        <span class="result-name">Level</span>
+        <span id="pm-gameover-level" class="result-score">1</span>
+      </div>
+      <div class="result-row">
+        <span class="result-rank">🎮</span>
+        <span class="result-name">Mode</span>
+        <span id="pm-gameover-mode" class="result-score">Classic</span>
+      </div>
+      <div class="btn-row">
+        <button id="btn-pacman-play-again" class="btn btn-primary">▶ Play Again</button>
+        <button id="btn-pacman-gameover-home" class="btn btn-ghost">← Home</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Pac-Man Leaderboard ───────────────────────────── -->
+  <div id="screen-pacman-lb" class="screen">
+    <div class="card lb-card">
+      <h2>👻 Pac-Man — Top Scores</h2>
+      <table id="pm-lb-table" style="width:100%;border-collapse:collapse;font-size:.95rem">
+        <thead><tr><th>#</th><th>Player</th><th>Score</th><th>Mode</th></tr></thead>
+        <tbody id="pm-lb-body"></tbody>
+      </table>
+      <button id="btn-pacman-lb-back" class="btn btn-ghost">← Back</button>
     </div>
   </div>
 
