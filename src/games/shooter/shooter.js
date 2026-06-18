@@ -1,4 +1,4 @@
-import { showScreen, submitScore, loadLeaderboard, supabase } from '../../shared.js';
+import { showScreen, submitScore, loadLeaderboard, supabase } from '../../core/shared.js';
 import { ShooterGame } from './ShooterGame.js';
 
 const GAME_W      = 800;

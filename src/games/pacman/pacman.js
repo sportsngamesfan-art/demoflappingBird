@@ -1,5 +1,5 @@
 import { PacmanGame } from './PacmanGame.js';
-import { showScreen, submitScore, loadLeaderboard } from '../../shared.js';
+import { showScreen, submitScore, loadLeaderboard } from '../../core/shared.js';
 
 let pmName = '';
 let pmGame = null;

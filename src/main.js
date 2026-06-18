@@ -1,5 +1,5 @@
-import { FlappyGame } from './game/Game.js';
-import { supabase, showScreen, genCode, hexColor, PLAYER_COLORS, RANK_MEDALS, submitScore } from './shared.js';
+import { FlappyGame } from './games/flappy/FlappyGame.js';
+import { supabase, showScreen, genCode, hexColor, PLAYER_COLORS, RANK_MEDALS, submitScore } from './core/shared.js';
 import { initReactionTap } from './games/reaction-tap/reaction-tap.js';
 import { initShooter } from './games/shooter/shooter.js';
 import { initPacman } from './games/pacman/pacman.js';
