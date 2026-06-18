@@ -558,29 +558,36 @@ input[type="text"].uppercase { text-transform: uppercase; letter-spacing: 4px; }
   width: 100%;
   position: sticky; top: 0; z-index: 200;
   display: flex; align-items: center; gap: 1rem;
-  padding: .65rem 2rem;
-  background: rgba(10, 14, 30, 0.88);
+  padding: .6rem 1.5rem;
+  background: rgba(10, 14, 30, 0.92);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid rgba(255,255,255,.07);
   flex-shrink: 0;
 }
 .ott-topbar__logo {
-  font-family: 'Fredoka One', cursive; font-size: 1.15rem;
+  font-family: 'Fredoka One', cursive; font-size: 1.1rem;
   color: var(--yellow); white-space: nowrap; flex-shrink: 0;
 }
 .ott-topbar__center { flex: 1; display: flex; justify-content: center; }
 .ott-online-pill {
   background: rgba(76,175,80,.15); border: 1px solid rgba(76,175,80,.3);
-  border-radius: 20px; padding: .28rem .85rem;
-  font-size: .8rem; color: #81c784; white-space: nowrap;
+  border-radius: 20px; padding: .22rem .75rem;
+  font-size: .75rem; color: #81c784; white-space: nowrap;
 }
-.ott-topbar__actions { display: flex; gap: .45rem; flex-shrink: 0; }
-.ott-topbar__actions .btn { font-size: .78rem; padding: .45rem .9rem; }
+.ott-topbar__actions { display: flex; gap: .4rem; flex-shrink: 0; }
+.ott-topbar__actions .btn { font-size: .75rem; padding: .4rem .85rem; }
+/* Quick Match is the hero CTA */
+.ott-topbar__actions #qa-quickmatch { background: var(--green); font-size: .8rem; }
 
-@media (max-width: 600px) {
-  .ott-topbar { flex-wrap: wrap; padding: .55rem 1rem; gap: .4rem; }
-  .ott-topbar__center { order: 3; width: 100%; justify-content: flex-start; }
-  .ott-topbar__actions .btn { font-size: .7rem; padding: .38rem .6rem; }
+@media (max-width: 640px) {
+  .ott-topbar { padding: .5rem 1rem; gap: .5rem; }
+  /* Hide online pill on small screens to save space */
+  .ott-topbar__center { display: none; }
+  .ott-topbar__actions .btn { font-size: .68rem; padding: .35rem .55rem; }
+}
+@media (max-width: 380px) {
+  /* Very small phones — hide Create/Join, keep Quick */
+  #qa-create, #qa-join { display: none; }
 }
 
 /* ── Scroll Body ── */
@@ -591,91 +598,98 @@ input[type="text"].uppercase { text-transform: uppercase; letter-spacing: 4px; }
 
 /* ── Hero Banner ── */
 .ott-hero {
-  position: relative; width: 100%; height: 320px;
+  position: relative; width: 100%; height: 280px;
   overflow: hidden; flex-shrink: 0; cursor: pointer;
 }
 .ott-hero__bg {
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
-  font-size: 14rem; opacity: .15; user-select: none;
+  font-size: 12rem; opacity: .13; user-select: none;
   transition: opacity .5s, transform .7s;
 }
 .ott-hero--transitioning .ott-hero__bg { opacity: 0; transform: scale(1.08); }
 .ott-hero__overlay {
   position: absolute; inset: 0;
-  background: linear-gradient(to top,
-    rgba(10,14,30,.98) 0%, rgba(10,14,30,.55) 40%, rgba(10,14,30,.12) 100%);
+  /* Strong left gradient so text is always legible */
+  background:
+    linear-gradient(to right, rgba(10,14,30,.92) 0%, rgba(10,14,30,.45) 55%, rgba(10,14,30,.1) 100%),
+    linear-gradient(to top,   rgba(10,14,30,.98) 0%, rgba(10,14,30,.3)  60%, transparent 100%);
 }
 .ott-hero__content {
-  position: absolute; bottom: 2.2rem; left: 2.5rem; right: 2.5rem;
-  display: flex; flex-direction: column; gap: .5rem;
+  position: absolute; bottom: 1.8rem; left: 2rem; right: 40%;
+  display: flex; flex-direction: column; gap: .4rem;
 }
 .ott-hero__tag {
   display: inline-block; width: fit-content;
-  font-size: .62rem; font-weight: 700; letter-spacing: 1.2px;
-  padding: .18em .65em; border-radius: 5px;
+  font-size: .6rem; font-weight: 700; letter-spacing: 1.2px;
+  padding: .16em .6em; border-radius: 5px;
 }
 .ott-hero__title {
   font-family: 'Fredoka One', cursive;
-  font-size: clamp(1.9rem, 5vw, 3.2rem);
-  color: #fff; text-shadow: 0 2px 14px rgba(0,0,0,.5); margin: 0;
+  font-size: clamp(1.7rem, 4vw, 2.8rem);
+  color: #fff; text-shadow: 0 2px 18px rgba(0,0,0,.7); margin: 0;
 }
-.ott-hero__tagline { color: rgba(255,255,255,.65); font-size: .95rem; margin: 0; }
-.ott-hero__meta    { font-size: .8rem; color: rgba(255,255,255,.45); margin: 0; }
+.ott-hero__tagline { color: rgba(255,255,255,.7); font-size: .88rem; margin: 0; }
+.ott-hero__meta    { font-size: .75rem; color: rgba(255,255,255,.45); margin: 0; }
 .ott-hero__dots {
-  position: absolute; bottom: .9rem; right: 2rem;
-  display: flex; gap: .45rem;
+  position: absolute; bottom: .8rem; right: 1.5rem;
+  display: flex; gap: .4rem;
 }
 .ott-hero__dot {
-  width: 7px; height: 7px; border-radius: 50%;
+  width: 6px; height: 6px; border-radius: 50%;
   background: rgba(255,255,255,.28); cursor: pointer;
   transition: background .3s, transform .3s;
 }
-.ott-hero__dot.active { background: var(--yellow); transform: scale(1.35); }
+.ott-hero__dot.active { background: var(--yellow); transform: scale(1.4); }
 
-@media (max-width: 600px) {
-  .ott-hero { height: 210px; }
-  .ott-hero__bg { font-size: 8rem; }
-  .ott-hero__content { left: 1.25rem; right: 1.25rem; bottom: 1.5rem; gap: .3rem; }
-  .ott-hero__title { font-size: 1.6rem; }
+@media (max-width: 640px) {
+  .ott-hero { height: 200px; }
+  .ott-hero__bg { font-size: 7rem; }
+  .ott-hero__content { left: 1.1rem; right: 1.1rem; bottom: 1.2rem; gap: .25rem; }
+  .ott-hero__title { font-size: clamp(1.3rem, 6vw, 1.8rem); }
+  .ott-hero__tagline { font-size: .78rem; }
+  .ott-hero__meta { display: none; }
 }
 
 /* ── Game Rows ── */
-.ott-rows { display: flex; flex-direction: column; gap: .25rem; padding: 1.2rem 0 0; }
+.ott-rows { display: flex; flex-direction: column; gap: .1rem; padding: 1rem 0 0; }
 
-.ott-row { padding: 0 2rem 1.4rem; }
+.ott-row { padding: 0 1.5rem 1.2rem; }
 .ott-row__header {
   display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: .7rem;
+  margin-bottom: .6rem;
 }
 .ott-row__title {
   font-family: 'Fredoka One', cursive;
-  font-size: 1.05rem; color: rgba(255,255,255,.8);
+  font-size: 1rem; color: rgba(255,255,255,.8);
 }
 .ott-row__nav { display: flex; gap: .3rem; }
 .ott-row__nav-btn {
-  width: 30px; height: 30px; border-radius: 50%;
+  width: 28px; height: 28px; border-radius: 50%;
   background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.22);
-  color: #fff; font-size: 1.2rem; cursor: pointer;
+  color: #fff; font-size: 1.1rem; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: background .18s; line-height: 1; padding: 0;
 }
 .ott-row__nav-btn:hover { background: rgba(255,215,0,.3); border-color: var(--yellow); }
 .ott-row__nav-btn:disabled { opacity: .25; pointer-events: none; }
 .ott-row__track {
-  display: flex; gap: 1rem;
+  display: flex; gap: .75rem;
   overflow-x: auto; scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
   padding-bottom: .4rem; scrollbar-width: none;
 }
 .ott-row__track::-webkit-scrollbar { display: none; }
 
-@media (max-width: 600px) {
-  .ott-row { padding: 0 1rem 1.2rem; }
+@media (max-width: 640px) {
+  .ott-row { padding: 0 .9rem 1rem; }
+  /* Nav buttons are useless on touch — swipe is natural */
+  .ott-row__nav { display: none; }
 }
 
 /* ── OTT Cards ── */
 .ott-card {
-  flex: 0 0 200px; height: 250px;
+  flex: 0 0 160px; height: 205px;
   scroll-snap-align: start;
   border-radius: 14px; overflow: hidden; cursor: pointer;
   position: relative; display: flex; flex-direction: column;
@@ -687,17 +701,19 @@ input[type="text"].uppercase { text-transform: uppercase; letter-spacing: 4px; }
 .ott-card[data-tag="SOLO"]  { border-top: 3px solid #4fc3f7; }
 .ott-card[data-tag="CO-OP"] { border-top: 3px solid #69f0ae; }
 .ott-card[data-tag="LOCAL"] { border-top: 3px solid #ce93d8; }
-.ott-card:hover {
-  transform: translateY(-8px) scale(1.02);
-  border-color: var(--yellow);
-  box-shadow: 0 16px 40px rgba(255,215,0,.2);
+@media (hover: hover) {
+  .ott-card:hover {
+    transform: translateY(-6px) scale(1.02);
+    border-color: var(--yellow);
+    box-shadow: 0 12px 32px rgba(255,215,0,.2);
+  }
 }
 .ott-card__art {
   flex: 1; display: flex; align-items: center; justify-content: center;
   position: relative;
   background: linear-gradient(160deg, rgba(255,255,255,.07) 0%, rgba(255,255,255,.02) 100%);
 }
-.ott-card__emoji { font-size: 4.5rem; line-height: 1; }
+.ott-card__emoji { font-size: 3.5rem; line-height: 1; }
 .ott-card__players {
   position: absolute; bottom: 7px; right: 8px;
   background: rgba(0,0,0,.5); border: 1px solid rgba(255,255,255,.15);
@@ -725,16 +741,19 @@ input[type="text"].uppercase { text-transform: uppercase; letter-spacing: 4px; }
   gap: .75rem; padding: 1.2rem;
   opacity: 0; transition: opacity .2s; pointer-events: none;
 }
-.ott-card:hover .ott-card__hover { opacity: 1; pointer-events: auto; }
+@media (hover: hover) {
+  .ott-card:hover .ott-card__hover { opacity: 1; pointer-events: auto; }
+}
 .ott-card__desc {
   font-size: .77rem; color: rgba(255,255,255,.7);
   text-align: center; line-height: 1.45; margin: 0;
 }
 .ott-card__play { width: 100%; font-size: .85rem; }
 
-@media (max-width: 600px) {
-  .ott-card { flex: 0 0 155px; height: 200px; }
-  .ott-card__emoji { font-size: 3.5rem; }
+@media (max-width: 640px) {
+  .ott-card { flex: 0 0 140px; height: 178px; }
+  .ott-card__emoji { font-size: 2.8rem; }
+  .ott-card__title { font-size: .88rem; }
 }
 
 /* ── Live Ticker ── */
