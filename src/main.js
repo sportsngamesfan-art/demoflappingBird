@@ -681,7 +681,6 @@ initChess();
 initHomeBg();
 startActivityFeed();
 startLiveMatchWidget();
-animateHomeEntrance();
 
 // ─── 3D Lobby toggle ──────────────────────────────────────────────────────────
 let lobby3DActive = localStorage.getItem('lobbyMode') === '3d';
@@ -708,3 +707,5 @@ lobbyToggle?.addEventListener('click', () => {
 
 applyLobbyMode();
 showScreen('screen-home');
+// Animate after screen is visible so GSAP doesn't start on display:none elements
+requestAnimationFrame(animateHomeEntrance);

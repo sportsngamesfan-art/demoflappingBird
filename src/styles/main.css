@@ -558,7 +558,7 @@ input[type="text"].uppercase { text-transform: uppercase; letter-spacing: 4px; }
   .home-right { order: 3; }
 }
 .home-left { display: flex; flex-direction: column; gap: 1.4rem; min-width: 0; }
-.home-right { display: flex; flex-direction: column; gap: 1rem; }
+.home-right { display: flex; flex-direction: column; gap: 1rem; min-width: 0; opacity: 1 !important; }
 
 /* Hero */
 .home-hero { text-align: center; padding: .5rem 0 .25rem; }
