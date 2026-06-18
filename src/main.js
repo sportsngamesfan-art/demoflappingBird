@@ -3,6 +3,7 @@ import { supabase, showScreen, genCode, hexColor, PLAYER_COLORS, RANK_MEDALS, su
 import { initReactionTap } from './games/reaction-tap/reaction-tap.js';
 import { initShooter } from './games/shooter/shooter.js';
 import { initPacman } from './games/pacman/pacman.js';
+import { initChess } from './games/chess/chess.js';
 import { initHomeBg } from './home-bg.js';
 import { gsap } from 'gsap';
 import { initNav, updateGameHUD } from './nav.js';
@@ -393,8 +394,15 @@ async function loadFlappyLeaderboard() {
 
 // ─── Activity feed ────────────────────────────────────────────────────────────
 const _ACT_NAMES = ['Ayan','Riaan','Siddharth','Priya','Lucas','Emma','James','Sofia','Noah','Mia'];
-const _ACT_GAMES = ['Flappy Bird','Pac-Man','Shooter','Reaction Tap'];
+const _ACT_GAMES = ['Flappy Bird','Pac-Man','Shooter','Reaction Tap','Chess'];
 const _ACT_VERBS = ['playing','in lobby for','just scored in','challenging friends in','started a room for'];
+const _VERB_ICON = {
+  'playing': '🎮',
+  'in lobby for': '👥',
+  'just scored in': '🏆',
+  'challenging friends in': '⚡',
+  'started a room for': '🚀',
+};
 
 function startActivityFeed() {
   const feed = document.getElementById('activity-feed');
@@ -403,23 +411,117 @@ function startActivityFeed() {
     const name = _ACT_NAMES[Math.floor(Math.random() * _ACT_NAMES.length)];
     const game = _ACT_GAMES[Math.floor(Math.random() * _ACT_GAMES.length)];
     const verb = _ACT_VERBS[Math.floor(Math.random() * _ACT_VERBS.length)];
-    const away = Math.random() > 0.72;
+    const icon = _VERB_ICON[verb] || '🎮';
+    const ts = Date.now();
     const div = document.createElement('div');
     div.className = 'activity-item';
-    div.innerHTML = `<span class="activity-dot${away ? ' away' : ''}"></span><span>${name} is ${verb} ${game}</span>`;
+    div.dataset.ts = ts;
+    div.innerHTML = `<span class="activity-icon">${icon}</span><span class="activity-text">${name} is ${verb} ${game}</span><span class="activity-time">just now</span>`;
     feed.prepend(div);
-    while (feed.children.length > 4) feed.lastChild.remove();
+    while (feed.children.length > 5) feed.lastChild.remove();
   }
   add();
   setInterval(add, 3500);
+  // Update relative timestamps every 30s
+  setInterval(() => {
+    feed.querySelectorAll('.activity-item[data-ts]').forEach(el => {
+      const age = Math.round((Date.now() - el.dataset.ts) / 60000);
+      el.querySelector('.activity-time').textContent = age < 1 ? 'just now' : `${age}m ago`;
+    });
+  }, 30000);
+}
+
+// ─── Live Match widget ────────────────────────────────────────────────────────
+const MINI_START = [
+  'rnbqkbnr/pp2pppp/2p5/3p4/3PP3/5N2/PPP2PPP/RNBQKB1R',
+];
+const MINI_MOVES = [
+  // [fromR,fromC, toR,toC] — 0-indexed from top-left (rank 8)
+  [4,3, 3,3], // d5xd4? simple pawn capture sim
+  [7,6, 5,5], // Nf3 already placed, fake move
+  [1,4, 2,4], // e7-e6
+  [0,3, 2,5], // Qd8-f6 sim
+  [7,4, 7,5], // King side move sim (placeholder)
+  [3,3, 4,3], // pawn back sim
+];
+
+function buildMiniBoardFromFen(fen) {
+  const SYMS = {
+    K:'♔',Q:'♕',R:'♖',B:'♗',N:'♘',P:'♙',
+    k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟',
+  };
+  const board = document.getElementById('mini-board');
+  if (!board) return;
+  board.innerHTML = '';
+  const ranks = fen.split(' ')[0].split('/');
+  const cells = [];
+  for (const rank of ranks) {
+    for (const ch of rank) {
+      if (/\d/.test(ch)) { for (let i=0;i<+ch;i++) cells.push(null); }
+      else cells.push(ch);
+    }
+  }
+  cells.forEach((piece, i) => {
+    const r = Math.floor(i/8), c = i%8;
+    const sq = document.createElement('div');
+    sq.className = `mb-sq ${(r+c)%2===0 ? 'light':'dark'}`;
+    sq.dataset.idx = i;
+    if (piece) {
+      const isWhite = piece === piece.toUpperCase();
+      sq.style.color = isWhite ? '#fff' : '#1a1a1a';
+      sq.style.textShadow = isWhite ? '0 1px 2px rgba(0,0,0,.5)' : '0 1px 2px rgba(255,255,255,.2)';
+      sq.textContent = SYMS[piece] || '';
+    }
+    board.appendChild(sq);
+  });
+}
+
+function startLiveMatchWidget() {
+  buildMiniBoardFromFen(MINI_START[0]);
+  let moveIdx = 0;
+  let whiteTurn = false; // starting state shown as white already moved
+  const statusDot  = document.getElementById('lm-status')?.querySelector('.lm-status-dot');
+  const statusText = document.getElementById('lm-status-text');
+  const moveCount  = document.getElementById('lm-move-count');
+  if (!statusText) return;
+
+  setInterval(() => {
+    const board = document.getElementById('mini-board');
+    if (!board) return;
+    const [fr,fc,tr,tc] = MINI_MOVES[moveIdx % MINI_MOVES.length];
+    const fromIdx = fr*8+fc, toIdx = tr*8+tc;
+    const fromSq = board.children[fromIdx];
+    const toSq   = board.children[toIdx];
+    if (fromSq && toSq && fromSq.textContent) {
+      // Brief highlight
+      fromSq.classList.add('highlight'); toSq.classList.add('highlight');
+      setTimeout(() => {
+        toSq.textContent   = fromSq.textContent;
+        toSq.style.color   = fromSq.style.color;
+        toSq.style.textShadow = fromSq.style.textShadow;
+        fromSq.textContent = '';
+        fromSq.classList.remove('highlight'); toSq.classList.remove('highlight');
+      }, 400);
+    }
+    moveIdx++;
+    whiteTurn = !whiteTurn;
+    if (statusDot) { statusDot.className = `lm-status-dot ${whiteTurn ? 'white' : 'black'}`; }
+    if (statusText) statusText.textContent = whiteTurn ? 'White to move' : 'Black to move';
+    const baseMove = 7 + moveIdx;
+    if (moveCount) moveCount.textContent = `Move ${baseMove}`;
+  }, 3200);
+
+  // Watch/Join buttons → chess landing
+  document.getElementById('btn-watch-match')?.addEventListener('click', () => showScreen('screen-chess-landing'));
+  document.getElementById('btn-join-queue')?.addEventListener('click',  () => showScreen('screen-chess-landing'));
 }
 
 function animateHomeEntrance() {
   gsap.from('.home-hero',       { y: -18, opacity: 0, duration: .55, ease: 'power2.out' });
   gsap.from('.quick-actions',   { y: 20,  opacity: 0, duration: .48, delay: .12, ease: 'power2.out' });
-  gsap.from('.featured-card',   { y: 28,  opacity: 0, duration: .52, delay: .22, ease: 'power2.out' });
-  gsap.from('.game-card-lg',    { y: 28,  opacity: 0, duration: .42, stagger: .09, delay: .32, ease: 'power2.out' });
-  gsap.from('.activity-panel',  { y: 18,  opacity: 0, duration: .38, delay: .60, ease: 'power2.out' });
+  gsap.from('.game-card-lg',    { y: 28,  opacity: 0, duration: .42, stagger: .08, delay: .28, ease: 'power2.out' });
+  gsap.from('.activity-panel',  { y: 18,  opacity: 0, duration: .38, delay: .55, ease: 'power2.out' });
+  gsap.from('.home-right',      { x: 20,  opacity: 0, duration: .52, delay: .35, ease: 'power2.out' });
 }
 
 // ─── Event listeners ──────────────────────────────────────────────────────────
@@ -464,6 +566,24 @@ document.getElementById('card-flappy-carousel')?.addEventListener('click', () =>
 document.getElementById('card-reaction')?.addEventListener('click', () => showScreen('screen-reaction-landing'));
 document.getElementById('card-shooter')?.addEventListener('click', () => showScreen('screen-shooter-landing'));
 document.getElementById('card-pacman')?.addEventListener('click', () => showScreen('screen-pacman-landing'));
+document.getElementById('card-chess')?.addEventListener('click', () => showScreen('screen-chess-landing'));
+
+// ─── Carousel scroll buttons ──────────────────────────────────────────────────
+(function initCarousel() {
+  const carousel = document.getElementById('game-carousel');
+  const btnPrev  = document.getElementById('carousel-prev');
+  const btnNext  = document.getElementById('carousel-next');
+  if (!carousel || !btnPrev || !btnNext) return;
+  const SCROLL_BY = 201; // card width (185) + gap (16)
+  function updateBtns() {
+    btnPrev.disabled = carousel.scrollLeft <= 4;
+    btnNext.disabled = carousel.scrollLeft + carousel.clientWidth >= carousel.scrollWidth - 4;
+  }
+  btnPrev.addEventListener('click', () => { carousel.scrollBy({ left: -SCROLL_BY, behavior: 'smooth' }); });
+  btnNext.addEventListener('click', () => { carousel.scrollBy({ left:  SCROLL_BY, behavior: 'smooth' }); });
+  carousel.addEventListener('scroll', updateBtns, { passive: true });
+  updateBtns();
+})();
 
 // ─── Quick-action modals ──────────────────────────────────────────────────────
 const GAME_ROUTES = {
@@ -471,6 +591,7 @@ const GAME_ROUTES = {
   reaction: () => showScreen('screen-reaction-landing'),
   shooter:  () => showScreen('screen-shooter-landing'),
   pacman:   () => showScreen('screen-pacman-landing'),
+  chess:    () => showScreen('screen-chess-landing'),
 };
 
 function openCreateModal() {
@@ -556,8 +677,10 @@ initNav();
 initReactionTap();
 initShooter(myId);
 initPacman();
+initChess();
 initHomeBg();
 startActivityFeed();
+startLiveMatchWidget();
 animateHomeEntrance();
 
 // ─── 3D Lobby toggle ──────────────────────────────────────────────────────────

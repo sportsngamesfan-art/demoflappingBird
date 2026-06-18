@@ -4,7 +4,7 @@ let _currentGame = null;    // { pause(), resume(), destroy() }
 let _currentScreen = '';
 
 const GAME_SCREENS = new Set([
-  'screen-game', 'screen-reaction-game', 'screen-shooter-game', 'screen-pacman-game',
+  'screen-game', 'screen-reaction-game', 'screen-shooter-game', 'screen-pacman-game', 'screen-chess-game',
 ]);
 
 const HOME_SCREENS = new Set([
