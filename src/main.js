@@ -488,24 +488,21 @@ animateHomeEntrance();
 // ─── 3D Lobby toggle ──────────────────────────────────────────────────────────
 let lobby3DActive = localStorage.getItem('lobbyMode') === '3d';
 const lobbyCanvas = document.getElementById('lobby-canvas');
-const lobbyGrid   = document.querySelector('.game-card-grid');
 const lobbyToggle = document.getElementById('btn-lobby-toggle');
 
 function applyLobbyMode() {
   if (lobby3DActive) {
-    lobbyGrid.classList.add('hidden');
-    lobbyCanvas.classList.remove('hidden');
-    lobbyToggle.textContent = '◼ 2D View';
-    initLobby3D(lobbyCanvas, screenId => showScreen(screenId));
+    lobbyCanvas?.classList.remove('hidden');
+    if (lobbyToggle) lobbyToggle.textContent = '◼ 2D View';
+    if (lobbyCanvas) initLobby3D(lobbyCanvas, screenId => showScreen(screenId));
   } else {
-    lobbyGrid.classList.remove('hidden');
-    lobbyCanvas.classList.add('hidden');
-    lobbyToggle.textContent = '🎮 3D View';
+    lobbyCanvas?.classList.add('hidden');
+    if (lobbyToggle) lobbyToggle.textContent = '🎮 3D View';
     destroyLobby3D();
   }
 }
 
-lobbyToggle.addEventListener('click', () => {
+lobbyToggle?.addEventListener('click', () => {
   lobby3DActive = !lobby3DActive;
   localStorage.setItem('lobbyMode', lobby3DActive ? '3d' : '2d');
   applyLobbyMode();
