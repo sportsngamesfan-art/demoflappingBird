@@ -2,6 +2,12 @@ import { CELL, COLS, ROWS, PELLET, POWER, TUNNEL, Maze, MAZES } from './Maze.js'
 import { Ghost } from './Ghost.js';
 import { PacmanAudio } from './Audio.js';
 
+const THEMES = {
+  classic:    { bg: '#000011', wallFill: '#001a4d', wallGlow: '#00aaff', door: '#ff69b4', pellet: '#ddd',    powerGlow: '#FFD700', pacman: '#FFD700' },
+  neon:       { bg: '#0a000f', wallFill: '#1a0035', wallGlow: '#bf00ff', door: '#ff00aa', pellet: '#ff80ff', powerGlow: '#ff00ff', pacman: '#00ffdd' },
+  fire:       { bg: '#0f0000', wallFill: '#2d0800', wallGlow: '#ff4500', door: '#ff8800', pellet: '#ffaa55', powerGlow: '#ff0000', pacman: '#ff9900' },
+};
+
 const MAZE_W = COLS * CELL; // 448
 const MAZE_H = ROWS * CELL; // 496
 
@@ -35,11 +41,12 @@ const FRUIT_SPAWN_2 = 170;
 const FRUIT_DURATION = 9; // seconds
 
 export class PacmanGame {
-  constructor(canvas, mode, onEnd) {
+  constructor(canvas, mode, onEnd, theme = 'classic') {
     this._canvas = canvas;
     this._ctx = canvas.getContext('2d');
     this._mode = mode;      // 'classic' | 'endless' | 'timeattack'
     this._onEnd = onEnd;    // callback({ score, level })
+    this._theme = THEMES[theme] || THEMES.classic;
     this._audio = new PacmanAudio();
 
     this._raf = null;
@@ -94,6 +101,7 @@ export class PacmanGame {
       speed: PACMAN_SPEED_BASE * (1 + (this._level - 1) * 0.05),
       alive: true,
       mouthT: 0,
+      _col: -1, _row: -1, // tile-tracking for direction changes
     };
   }
 
@@ -202,17 +210,18 @@ export class PacmanGame {
     const cx = col * CELL + CELL / 2;
     const cy = row * CELL + CELL / 2;
 
-    // Snap + direction check whenever within 1.5px of tile center.
-    // Threshold is tight enough that after snapping and advancing one step
-    // (~2.1px at 60fps) we are outside it, preventing snap-back oscillation.
-    if (Math.abs(pm.x - cx) < 1.5 && Math.abs(pm.y - cy) < 1.5) {
-      pm.x = cx; pm.y = cy;
-      if (this._maze.canMove(cx, cy, pm.nextDir)) {
-        pm.dir = pm.nextDir;
-      }
-      if (!this._maze.canMove(cx, cy, pm.dir)) {
-        pm.mouthT += dt;
-        return; // blocked — wait for player input
+    // On entering a new tile (or forced recheck via _col=-1): snap to center,
+    // apply buffered direction if valid, stop if blocked.
+    if (col !== pm._col || row !== pm._row) {
+      if (Math.abs(pm.x - cx) <= speed + 1 && Math.abs(pm.y - cy) <= speed + 1) {
+        pm._col = col; pm._row = row;
+        pm.x = cx; pm.y = cy;
+        if (this._maze.canMove(cx, cy, pm.nextDir)) pm.dir = pm.nextDir;
+        if (!this._maze.canMove(cx, cy, pm.dir)) {
+          pm._col = -1; // force recheck every frame until unblocked
+          pm.mouthT += dt;
+          return;
+        }
       }
     }
 
@@ -224,7 +233,7 @@ export class PacmanGame {
     if (pm.x < -CELL / 2) pm.x = COLS * CELL + CELL / 2;
     if (pm.x > COLS * CELL + CELL / 2) pm.x = -CELL / 2;
 
-    // Hard vertical clamp — prevents exiting maze if somehow past border walls
+    // Hard vertical clamp
     pm.y = Math.max(CELL / 2, Math.min(pm.y, ROWS * CELL - CELL / 2));
   }
 
@@ -420,7 +429,7 @@ export class PacmanGame {
   _render() {
     const ctx = this._ctx;
     const W = this._canvas.width, H = this._canvas.height;
-    ctx.fillStyle = '#000';
+    ctx.fillStyle = this._theme.bg;
     ctx.fillRect(0, 0, W, H);
 
     const s = this._scale;
@@ -437,7 +446,7 @@ export class PacmanGame {
     }
 
     // Maze
-    this._maze.render(ctx, performance.now() / 1000, ox, oy, s);
+    this._maze.render(ctx, performance.now() / 1000, ox, oy, s, this._theme);
 
     // Fruit
     if (this._fruit) {
@@ -503,7 +512,7 @@ export class PacmanGame {
     const deathScale = this._dying ? Math.max(0, this._deathT / 1.5) : 1;
     ctx.scale(deathScale, deathScale);
 
-    ctx.fillStyle = '#FFD700';
+    ctx.fillStyle = this._theme.pacman;
     ctx.beginPath();
     ctx.moveTo(0, 0);
     ctx.arc(0, 0, r, mouth, Math.PI * 2 - mouth);

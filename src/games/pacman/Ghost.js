@@ -36,7 +36,8 @@ export class Ghost {
 
     this.dir = DIR.LEFT;
     this.speed = 1.5 * CELL;
-    this._lastDecisionTile = -1;
+    this._col = -1;
+    this._row = -1;
 
     this._reset();
   }
@@ -51,7 +52,8 @@ export class Ghost {
     this._modePhase = 0;
     this._frightenTimer = 0;
     this._exitPhase = 0;
-    this._lastDecisionTile = -1;
+    this._col = -1;
+    this._row = -1;
   }
 
   respawn() {
@@ -214,29 +216,30 @@ export class Ghost {
     const cy = row * CELL + CELL / 2;
     const step = this.speed * dt;
 
-    // Snap + choose direction when within 1.5px of tile center.
-    // Ghosts move ~1.6px/frame so after snapping and advancing one step
-    // the distance is ~1.6px ≥ 1.5px, preventing re-fire next frame.
-    if (Math.abs(this.x - cx) < 1.5 && Math.abs(this.y - cy) < 1.5) {
-      this.x = cx; this.y = cy;
+    // Decide direction only when entering a new tile
+    if (col !== this._col || row !== this._row) {
+      if (Math.abs(this.x - cx) <= step + 1 && Math.abs(this.y - cy) <= step + 1) {
+        this._col = col; this._row = row;
+        this.x = cx; this.y = cy;
 
-      let newDir;
-      if (this.mode === 'frightened') {
-        const valid = [];
-        const rev = (this.dir + 2) % 4;
-        for (let d = 0; d < 4; d++) {
-          if (d === rev) continue;
-          const nc = col + DX[d], nr = row + DY[d];
-          const t = maze.get(nc, nr);
-          if (t !== WALL && t !== GHOST_INT && t !== GHOST_DOOR) valid.push(d);
+        let newDir;
+        if (this.mode === 'frightened') {
+          const valid = [];
+          const rev = (this.dir + 2) % 4;
+          for (let d = 0; d < 4; d++) {
+            if (d === rev) continue;
+            const nc = col + DX[d], nr = row + DY[d];
+            const t = maze.get(nc, nr);
+            if (t !== WALL && t !== GHOST_INT && t !== GHOST_DOOR) valid.push(d);
+          }
+          newDir = valid.length ? valid[Math.floor(Math.random() * valid.length)] : (this.dir + 2) % 4;
+        } else {
+          const target = this._getTarget(pacman, blinky);
+          newDir = this._chooseDirection(maze, target);
         }
-        newDir = valid.length ? valid[Math.floor(Math.random() * valid.length)] : (this.dir + 2) % 4;
-      } else {
-        const target = this._getTarget(pacman, blinky);
-        newDir = this._chooseDirection(maze, target);
-      }
 
-      this.dir = newDir;
+        this.dir = newDir;
+      }
     }
 
     this.x += DX[this.dir] * step;

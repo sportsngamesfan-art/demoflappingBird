@@ -255,9 +255,26 @@
       <h2>👻 PAC-MAN</h2>
       <input type="text" id="pacman-name" placeholder="Your name" maxlength="20" />
       <p id="pacman-error" class="error-msg"></p>
-      <button id="btn-pacman-classic" class="btn btn-primary btn-big">▶ Classic</button>
-      <button id="btn-pacman-endless" class="btn btn-accent btn-big">♾ Endless</button>
-      <button id="btn-pacman-timeattack" class="btn btn-secondary btn-big">⏱ Time Attack</button>
+
+      <div class="pm-picker-section">
+        <p class="pm-picker-label">Game Mode</p>
+        <div class="pm-picker-row">
+          <button class="pm-pick-btn active" data-pm-mode="classic">▶ Classic</button>
+          <button class="pm-pick-btn" data-pm-mode="endless">♾ Endless</button>
+          <button class="pm-pick-btn" data-pm-mode="timeattack">⏱ Time Attack</button>
+        </div>
+      </div>
+
+      <div class="pm-picker-section">
+        <p class="pm-picker-label">Visual Theme</p>
+        <div class="pm-picker-row">
+          <button class="pm-pick-btn pm-theme-classic active" data-pm-theme="classic">🔵 Classic</button>
+          <button class="pm-pick-btn pm-theme-neon" data-pm-theme="neon">🟣 Neon</button>
+          <button class="pm-pick-btn pm-theme-fire" data-pm-theme="fire">🔴 Fire</button>
+        </div>
+      </div>
+
+      <button id="btn-pacman-play" class="btn btn-primary btn-big">▶ Play</button>
       <div class="btn-row">
         <button id="btn-pacman-lb-show" class="btn btn-ghost">🏆 Leaderboard</button>
         <button id="btn-pacman-home" class="btn btn-ghost">← Home</button>

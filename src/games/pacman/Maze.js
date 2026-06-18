@@ -169,12 +169,11 @@ export class Maze {
   get remaining() { return this._totalPellets - this._eaten; }
   get total()     { return this._totalPellets; }
 
-  // Check if the tile adjacent to (px,py) in direction dir is passable.
-  // px,py must be at or near a tile center.
+  // Returns true if the tile one step in `dir` from Pac-Man's tile is passable.
   canMove(px, py, dir) {
     const DX = [1, 0, -1, 0], DY = [0, 1, 0, -1];
-    const col = Math.round(px / CELL - 0.5); // tile col containing px
-    const row = Math.round(py / CELL - 0.5);
+    const col = Math.floor(px / CELL);  // was Math.round(…-0.5) — wrong at tile boundaries
+    const row = Math.floor(py / CELL);
     const nc = col + DX[dir];
     const nr = row + DY[dir];
     const t = this.get(nc, nr);
@@ -192,8 +191,7 @@ export class Maze {
     return { x: col * CELL + CELL / 2, y: row * CELL + CELL / 2 };
   }
 
-  // Pre-render static wall geometry to an offscreen canvas so render() is cheap.
-  _buildWallCache(scale) {
+  _buildWallCache(scale, theme) {
     const s = scale;
     const w = Math.ceil(COLS * CELL * s);
     const h = Math.ceil(ROWS * CELL * s);
@@ -201,36 +199,31 @@ export class Maze {
     oc.width = w; oc.height = h;
     const c = oc.getContext('2d');
 
-    c.fillStyle = '#000';
+    c.fillStyle = theme.bg;
     c.fillRect(0, 0, w, h);
 
-    // Fill all wall cells
-    c.fillStyle = '#001a4d';
-    for (let row = 0; row < ROWS; row++) {
-      for (let col = 0; col < COLS; col++) {
-        if (this._orig[row][col] === WALL) {
+    c.fillStyle = theme.wallFill;
+    for (let row = 0; row < ROWS; row++)
+      for (let col = 0; col < COLS; col++)
+        if (this._orig[row][col] === WALL)
           c.fillRect(col * CELL * s, row * CELL * s, CELL * s, CELL * s);
-        }
-      }
-    }
 
-    // Draw neon border lines where wall meets non-wall — batched into one path
-    c.strokeStyle = '#00aaff';
+    c.strokeStyle = theme.wallGlow;
     c.lineWidth = Math.max(1, s * 1.5);
-    c.shadowColor = '#00aaff';
+    c.shadowColor = theme.wallGlow;
     c.shadowBlur = s * 6;
     c.beginPath();
     for (let row = 0; row < ROWS; row++) {
       for (let col = 0; col < COLS; col++) {
         if (this._orig[row][col] !== WALL) continue;
         const wx = col * CELL * s, wy = row * CELL * s, ws = CELL * s;
-        const neighbors = [
-          [col, row - 1, wx,      wy,      wx + ws, wy     ],
-          [col, row + 1, wx,      wy + ws, wx + ws, wy + ws],
-          [col - 1, row, wx,      wy,      wx,      wy + ws],
-          [col + 1, row, wx + ws, wy,      wx + ws, wy + ws],
+        const nb = [
+          [col, row-1, wx,    wy,    wx+ws, wy   ],
+          [col, row+1, wx,    wy+ws, wx+ws, wy+ws],
+          [col-1, row, wx,    wy,    wx,    wy+ws],
+          [col+1, row, wx+ws, wy,    wx+ws, wy+ws],
         ];
-        for (const [nc, nr, x1, y1, x2, y2] of neighbors) {
+        for (const [nc, nr, x1, y1, x2, y2] of nb) {
           const nc2 = ((nc % COLS) + COLS) % COLS;
           const nt = nr >= 0 && nr < ROWS ? this._orig[nr][nc2] : WALL;
           if (nt !== WALL) { c.moveTo(x1, y1); c.lineTo(x2, y2); }
@@ -239,68 +232,61 @@ export class Maze {
     }
     c.stroke();
 
-    // Ghost house door (magenta bar)
     c.shadowBlur = 0;
-    for (let row = 0; row < ROWS; row++) {
-      for (let col = 0; col < COLS; col++) {
+    for (let row = 0; row < ROWS; row++)
+      for (let col = 0; col < COLS; col++)
         if (this._orig[row][col] === GHOST_DOOR) {
-          c.fillStyle = '#ff88ff';
-          c.fillRect(col * CELL * s, row * CELL * s + CELL * s * 0.4, CELL * s, CELL * s * 0.2);
+          c.fillStyle = theme.door || '#ff88ff';
+          c.fillRect(col*CELL*s, row*CELL*s + CELL*s*0.4, CELL*s, CELL*s*0.2);
         }
-      }
-    }
 
     this._wallCache = oc;
     this._wallCacheScale = scale;
+    this._wallCacheTheme = theme;
   }
 
-  render(ctx, pulseT, offsetX = 0, offsetY = 0, scale = 1) {
+  render(ctx, pulseT, offsetX = 0, offsetY = 0, scale = 1, theme) {
     const s = scale;
     const ox = offsetX, oy = offsetY;
 
-    // Blit pre-rendered wall canvas (rebuilt only on scale change)
-    if (!this._wallCache || this._wallCacheScale !== scale) this._buildWallCache(scale);
+    if (!this._wallCache || this._wallCacheScale !== scale || this._wallCacheTheme !== theme)
+      this._buildWallCache(scale, theme);
     ctx.drawImage(this._wallCache, ox, oy);
 
-    // Outer border — neon blue glow rect around the whole maze
+    // Outer border matching wall glow
     ctx.save();
-    ctx.strokeStyle = '#00aaff';
+    ctx.strokeStyle = theme.wallGlow;
     ctx.lineWidth = Math.max(2, s * 2.5);
-    ctx.shadowColor = '#00aaff';
+    ctx.shadowColor = theme.wallGlow;
     ctx.shadowBlur = s * 10;
     ctx.strokeRect(ox + 1, oy + 1, COLS * CELL * s - 2, ROWS * CELL * s - 2);
     ctx.restore();
 
-    // Pellets — draw without shadowBlur for performance; faint white glow via small arc
-    ctx.fillStyle = '#ddd';
+    // Pellets
+    ctx.fillStyle = theme.pellet;
     ctx.beginPath();
-    for (let row = 0; row < ROWS; row++) {
-      for (let col = 0; col < COLS; col++) {
+    for (let row = 0; row < ROWS; row++)
+      for (let col = 0; col < COLS; col++)
         if (this._grid[row][col] === PELLET) {
-          ctx.moveTo(ox + (col + 0.5) * CELL * s + s * 2.5, oy + (row + 0.5) * CELL * s);
-          ctx.arc(ox + (col + 0.5) * CELL * s, oy + (row + 0.5) * CELL * s, s * 2.5, 0, Math.PI * 2);
+          ctx.moveTo(ox+(col+0.5)*CELL*s+s*2.5, oy+(row+0.5)*CELL*s);
+          ctx.arc(ox+(col+0.5)*CELL*s, oy+(row+0.5)*CELL*s, s*2.5, 0, Math.PI*2);
         }
-      }
-    }
     ctx.fill();
 
-    // Power pellets (pulsing gold — keep glow, only 4 of them so cheap)
+    // Power pellets
     const pulse = 0.85 + 0.15 * Math.sin(pulseT * 6);
     ctx.save();
-    ctx.shadowColor = '#FFD700';
+    ctx.shadowColor = theme.powerGlow;
     ctx.shadowBlur = s * 10;
-    ctx.fillStyle = '#FFD700';
+    ctx.fillStyle = theme.powerGlow;
     ctx.beginPath();
-    for (let row = 0; row < ROWS; row++) {
-      for (let col = 0; col < COLS; col++) {
+    for (let row = 0; row < ROWS; row++)
+      for (let col = 0; col < COLS; col++)
         if (this._grid[row][col] === POWER) {
-          const cx = ox + (col + 0.5) * CELL * s;
-          const cy = oy + (row + 0.5) * CELL * s;
-          ctx.moveTo(cx + s * 5 * pulse, cy);
-          ctx.arc(cx, cy, s * 5 * pulse, 0, Math.PI * 2);
+          const cx = ox+(col+0.5)*CELL*s, cy = oy+(row+0.5)*CELL*s;
+          ctx.moveTo(cx+s*5*pulse, cy);
+          ctx.arc(cx, cy, s*5*pulse, 0, Math.PI*2);
         }
-      }
-    }
     ctx.fill();
     ctx.restore();
   }

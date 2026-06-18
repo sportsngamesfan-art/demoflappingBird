@@ -381,6 +381,29 @@ input[type="text"].uppercase { text-transform: uppercase; letter-spacing: 4px; }
   touch-action: none;
 }
 
+/* ── Pac-Man Picker ───────────────────────────────── */
+.pm-picker-section { display: flex; flex-direction: column; gap: .4rem; }
+.pm-picker-label { font-size: .75rem; font-weight: 700; color: rgba(255,255,255,.55); text-transform: uppercase; letter-spacing: 1px; }
+.pm-picker-row { display: flex; gap: .5rem; flex-wrap: wrap; }
+.pm-pick-btn {
+  flex: 1;
+  padding: .45rem .6rem;
+  border-radius: 10px;
+  border: 2px solid rgba(255,255,255,.2);
+  background: rgba(255,255,255,.08);
+  color: rgba(255,255,255,.65);
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: .85rem;
+  cursor: pointer;
+  transition: all .18s;
+}
+.pm-pick-btn:hover { border-color: rgba(255,255,255,.45); color: #fff; }
+.pm-pick-btn.active { background: rgba(255,255,255,.18); border-color: var(--yellow); color: #fff; }
+.pm-theme-classic.active { border-color: #00aaff; box-shadow: 0 0 10px rgba(0,170,255,.4); }
+.pm-theme-neon.active    { border-color: #bf00ff; box-shadow: 0 0 10px rgba(191,0,255,.4); }
+.pm-theme-fire.active    { border-color: #ff4500; box-shadow: 0 0 10px rgba(255,69,0,.4); }
+
 /* ── Pac-Man ──────────────────────────────────────── */
 #screen-pacman-game {
   padding: 0;
