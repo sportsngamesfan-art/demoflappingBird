@@ -169,23 +169,24 @@ export class FlappyGame {
         : Math.PI / 2;
       const alpha = p.alive ? 1 : 0.5;
 
+      // Rotated badge (tilts with bird velocity)
       ctx.save();
       ctx.globalAlpha = alpha;
       ctx.translate(p.x, p.y);
       ctx.rotate(tilt);
-
-      // White badge behind emoji (makes bird pop on any background)
       ctx.fillStyle = 'rgba(255,255,255,0.92)';
       ctx.beginPath();
       ctx.arc(0, 0, 17, 0, Math.PI * 2);
       ctx.fill();
+      ctx.restore();
 
-      // Emoji
-      ctx.font = '26px serif';
+      // Emoji drawn upright at bird position (no rotation — avoids browser emoji transform bugs)
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.font = '26px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(p.emoji || '🐦', 0, 0);
-
+      ctx.fillText(p.emoji || '🐦', p.x, p.y);
       ctx.restore();
 
       // Player name label
