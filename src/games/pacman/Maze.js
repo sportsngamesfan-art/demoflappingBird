@@ -172,7 +172,7 @@ export class Maze {
   // Check if Pac-Man at pixel position can move in a direction
   // px,py = center of pac-man in pixels (0,0 = top-left of maze)
   canMove(px, py, dir, r = 6) {
-    const offsets = [[1,0],[-1,0],[0,-1],[0,1]]; // right left up down
+    const offsets = [[1,0],[0,1],[-1,0],[0,-1]]; // right down left up  (matches DIR enum)
     const [dx, dy] = offsets[dir];
     const nx = px + dx * (r + 1);
     const ny = py + dy * (r + 1);
