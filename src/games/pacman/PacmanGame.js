@@ -53,9 +53,25 @@ export class PacmanGame {
     this._keys = {};
     this._onKey = e => this._handleKey(e);
     this._onClick = e => this._handleTap(e);
+    this._swipeStart = null;
+    this._onTouchStart = e => { const t = e.touches[0]; this._swipeStart = { x: t.clientX, y: t.clientY }; };
+    this._onTouchEnd = e => {
+      if (!this._swipeStart) return;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - this._swipeStart.x;
+      const dy = t.clientY - this._swipeStart.y;
+      this._swipeStart = null;
+      if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return; // tap, not swipe
+      if (Math.abs(dx) > Math.abs(dy)) {
+        this._pm.nextDir = dx > 0 ? DIR.RIGHT : DIR.LEFT;
+      } else {
+        this._pm.nextDir = dy > 0 ? DIR.DOWN : DIR.UP;
+      }
+    };
     window.addEventListener('keydown', this._onKey);
     canvas.addEventListener('click', this._onClick);
-    canvas.addEventListener('touchstart', this._onClick, { passive: true });
+    canvas.addEventListener('touchstart', this._onTouchStart, { passive: true });
+    canvas.addEventListener('touchend',   this._onTouchEnd,   { passive: true });
 
     this._level = 1;
     this._score = 0;
@@ -129,7 +145,8 @@ export class PacmanGame {
     window.removeEventListener('keydown', this._onKey);
     window.removeEventListener('resize', this._resizeBound);
     this._canvas.removeEventListener('click', this._onClick);
-    this._canvas.removeEventListener('touchstart', this._onClick);
+    this._canvas.removeEventListener('touchstart', this._onTouchStart);
+    this._canvas.removeEventListener('touchend',   this._onTouchEnd);
   }
 
   _loop(t) {
