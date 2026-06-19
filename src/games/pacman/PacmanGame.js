@@ -54,14 +54,13 @@ export class PacmanGame {
     this._onKey = e => this._handleKey(e);
     this._onClick = e => this._handleTap(e);
     this._swipeStart = null;
-    this._onTouchStart = e => { const t = e.touches[0]; this._swipeStart = { x: t.clientX, y: t.clientY }; };
-    this._onTouchEnd = e => {
+    this._onPointerDown = e => { this._swipeStart = { x: e.clientX, y: e.clientY }; };
+    this._onPointerUp = e => {
       if (!this._swipeStart) return;
-      const t = e.changedTouches[0];
-      const dx = t.clientX - this._swipeStart.x;
-      const dy = t.clientY - this._swipeStart.y;
+      const dx = e.clientX - this._swipeStart.x;
+      const dy = e.clientY - this._swipeStart.y;
       this._swipeStart = null;
-      if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return; // tap, not swipe
+      if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
       if (Math.abs(dx) > Math.abs(dy)) {
         this._pm.nextDir = dx > 0 ? DIR.RIGHT : DIR.LEFT;
       } else {
@@ -69,9 +68,8 @@ export class PacmanGame {
       }
     };
     window.addEventListener('keydown', this._onKey);
-    canvas.addEventListener('click', this._onClick);
-    canvas.addEventListener('touchstart', this._onTouchStart, { passive: true });
-    canvas.addEventListener('touchend',   this._onTouchEnd,   { passive: true });
+    canvas.addEventListener('pointerdown', this._onPointerDown);
+    canvas.addEventListener('pointerup',   this._onPointerUp);
 
     this._level = 1;
     this._score = 0;
@@ -144,9 +142,8 @@ export class PacmanGame {
     if (this._raf) { cancelAnimationFrame(this._raf); this._raf = null; }
     window.removeEventListener('keydown', this._onKey);
     window.removeEventListener('resize', this._resizeBound);
-    this._canvas.removeEventListener('click', this._onClick);
-    this._canvas.removeEventListener('touchstart', this._onTouchStart);
-    this._canvas.removeEventListener('touchend',   this._onTouchEnd);
+    this._canvas.removeEventListener('pointerdown', this._onPointerDown);
+    this._canvas.removeEventListener('pointerup',   this._onPointerUp);
   }
 
   _loop(t) {

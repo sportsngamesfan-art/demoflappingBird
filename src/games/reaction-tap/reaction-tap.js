@@ -62,8 +62,7 @@ function startReactionGame() {
 
   rtTapBound = handleTap;
   rtKeyBound = (e) => { if (e.code === 'Space') { e.preventDefault(); handleTap(); } };
-  arena.addEventListener('click', rtTapBound);
-  arena.addEventListener('touchstart', rtTapBound, { passive: true });
+  arena.addEventListener('pointerdown', rtTapBound);
   window.addEventListener('keydown', rtKeyBound);
 
   setTimeout(() => nextRound(), 800);
@@ -161,8 +160,7 @@ function cleanup() {
   rtTimer = null;
   const arena = document.getElementById('rt-arena');
   if (arena && rtTapBound) {
-    arena.removeEventListener('click', rtTapBound);
-    arena.removeEventListener('touchstart', rtTapBound);
+    arena.removeEventListener('pointerdown', rtTapBound);
   }
   if (rtKeyBound) window.removeEventListener('keydown', rtKeyBound);
   rtTapBound = null;

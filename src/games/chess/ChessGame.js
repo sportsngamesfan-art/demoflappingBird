@@ -262,17 +262,14 @@ export class ChessGame {
 
   start() {
     this._resize();
-    this._canvas.addEventListener('click', this._onClick);
-    this._onTouch = e => { e.preventDefault(); this._onClick(e.changedTouches[0]); };
-    this._canvas.addEventListener('touchend', this._onTouch, { passive: false });
+    this._canvas.addEventListener('pointerdown', this._onClick);
     this._statusMsg = `${this._players.w}'s turn (White)`;
     this._render();
   }
 
   destroy() {
     this._ended = true;
-    this._canvas.removeEventListener('click', this._onClick);
-    this._canvas.removeEventListener('touchend', this._onTouch);
+    this._canvas.removeEventListener('pointerdown', this._onClick);
   }
 
   pause() { this._paused = true; }
