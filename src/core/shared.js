@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
 export const supabase = createClient(
-  'https://owqqfjyisewemtxjgexq.supabase.co',
-  'sb_publishable_9gmatl0oDebnQsENECo0jQ_Mf8OmZZA'
+  import.meta.env.VITE_SUPABASE_URL ?? 'https://owqqfjyisewemtxjgexq.supabase.co',
+  import.meta.env.VITE_SUPABASE_ANON_KEY ?? 'sb_publishable_9gmatl0oDebnQsENECo0jQ_Mf8OmZZA'
 );
 
 export const PLAYER_COLORS = [0xFFD700, 0xFF4455, 0x44AAFF, 0x44DD66, 0xBB44FF, 0xFF8822];
