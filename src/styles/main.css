@@ -21,6 +21,8 @@ body {
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  /* iOS Safari: allow touch events to propagate into fixed/scrollable children */
+  -webkit-overflow-scrolling: touch;
   color: #fff;
 }
 
@@ -548,6 +550,9 @@ input[type="text"].uppercase { text-transform: uppercase; letter-spacing: 4px; }
   align-items: stretch;
   justify-content: flex-start;
   overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
   padding: 0;
 }
 /* Tag colours (shared by cards, hero tag, etc.) */
@@ -596,6 +601,7 @@ input[type="text"].uppercase { text-transform: uppercase; letter-spacing: 4px; }
 /* ── Scroll Body ── */
 .ott-scroll-body {
   flex: 1; display: flex; flex-direction: column; position: relative; z-index: 1;
+  min-height: 0; /* allow flex child to shrink below content size */
 }
 .ott-scroll-footer { height: 56px; }
 
@@ -696,6 +702,7 @@ input[type="text"].uppercase { text-transform: uppercase; letter-spacing: 4px; }
   display: flex; gap: .75rem;
   overflow-x: auto; scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
   padding-bottom: .4rem; scrollbar-width: none;
 }
 .ott-row__track::-webkit-scrollbar { display: none; }
