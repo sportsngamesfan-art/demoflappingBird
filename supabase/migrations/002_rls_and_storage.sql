@@ -101,24 +101,10 @@ CREATE POLICY "admins update configs" ON game_configs
   FOR UPDATE TO authenticated USING (public.is_admin());
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- leaderboard: ensure an id exists for row-level admin deletes, keep public
--- read + insert working, add admin delete.
+-- NOTE: `leaderboard` is a VIEW, not a base table, so RLS / ADD COLUMN cannot be
+-- applied to it directly. Admin score deletion is handled against the underlying
+-- base table in migration 003 once its structure is confirmed.
 -- ─────────────────────────────────────────────────────────────────────────────
-ALTER TABLE leaderboard ADD COLUMN IF NOT EXISTS id BIGINT GENERATED ALWAYS AS IDENTITY;
-
-ALTER TABLE leaderboard ENABLE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS "public read leaderboard" ON leaderboard;
-CREATE POLICY "public read leaderboard" ON leaderboard
-  FOR SELECT TO anon, authenticated USING (true);
-
-DROP POLICY IF EXISTS "public insert leaderboard" ON leaderboard;
-CREATE POLICY "public insert leaderboard" ON leaderboard
-  FOR INSERT TO anon, authenticated WITH CHECK (true);
-
-DROP POLICY IF EXISTS "admins delete leaderboard" ON leaderboard;
-CREATE POLICY "admins delete leaderboard" ON leaderboard
-  FOR DELETE TO authenticated USING (public.is_admin());
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Storage bucket for generated/uploaded game art
