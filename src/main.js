@@ -780,6 +780,97 @@ document.getElementById('qa-quickmatch')?.addEventListener('click', async () => 
   }
 })();
 
+// ─── Splash Screen ────────────────────────────────────────────────────────────
+function initSplash() {
+  const track = document.getElementById('carousel-track');
+  const dotsEl = document.getElementById('carousel-dots');
+  if (!track || !dotsEl) return;
+
+  const PLACEHOLDERS = ['Flappy Bird', 'Coming Soon', 'More Games'];
+  let slides = [];
+  let currentSlide = 0;
+  let rotationTimer = null;
+
+  function renderSlides(items) {
+    track.innerHTML = '';
+    dotsEl.innerHTML = '';
+    slides = items;
+
+    items.forEach((item, i) => {
+      const slide = document.createElement('div');
+      slide.className = 'carousel-slide' + (i === 0 ? ' active' : '');
+
+      if (item.url) {
+        const img = document.createElement('img');
+        img.src = item.url;
+        img.alt = item.label || '';
+        slide.appendChild(img);
+      } else {
+        const ph = document.createElement('div');
+        ph.className = 'carousel-placeholder';
+        ph.textContent = item.label || '';
+        slide.appendChild(ph);
+      }
+      track.appendChild(slide);
+
+      const dot = document.createElement('button');
+      dot.className = 'carousel-dot' + (i === 0 ? ' active' : '');
+      dot.addEventListener('click', () => goToSlide(i));
+      dotsEl.appendChild(dot);
+    });
+  }
+
+  function goToSlide(idx) {
+    const slideEls = track.querySelectorAll('.carousel-slide');
+    const dotEls = dotsEl.querySelectorAll('.carousel-dot');
+    slideEls[currentSlide]?.classList.remove('active');
+    dotEls[currentSlide]?.classList.remove('active');
+    currentSlide = idx;
+    slideEls[currentSlide]?.classList.add('active');
+    dotEls[currentSlide]?.classList.add('active');
+  }
+
+  function startRotation() {
+    rotationTimer = setInterval(() => {
+      goToSlide((currentSlide + 1) % slides.length);
+    }, 3000);
+  }
+
+  // Load carousel images from Supabase
+  (async () => {
+    try {
+      const { data, error } = await supabase
+        .from('game_assets')
+        .select('url, asset_key')
+        .eq('game_name', 'splash')
+        .eq('asset_type', 'carousel')
+        .eq('is_active', true)
+        .order('asset_key');
+
+      if (error || !data?.length) throw new Error('no data');
+      renderSlides(data.map(d => ({ url: d.url, label: d.asset_key })));
+    } catch (_) {
+      renderSlides(PLACEHOLDERS.map(label => ({ url: null, label })));
+    }
+    if (slides.length > 1) startRotation();
+  })();
+
+  // Form submit
+  document.getElementById('splash-form')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('player-name-input').value.trim();
+    if (name) sessionStorage.setItem('playerName', name);
+    clearInterval(rotationTimer);
+    showScreen('screen-home');
+  });
+
+  // Skip button
+  document.getElementById('btn-skip')?.addEventListener('click', () => {
+    clearInterval(rotationTimer);
+    showScreen('screen-home');
+  });
+}
+
 // ─── Init ─────────────────────────────────────────────────────────────────────
 initNav();
 initReactionTap();
@@ -816,7 +907,8 @@ lobbyToggle?.addEventListener('click', () => {
 });
 
 applyLobbyMode();
-showScreen('screen-home');
+initSplash();
+showScreen('screen-splash');
 track('lobby_open');
 
 // ─── Load active game assets from Supabase ────────────────────────────────────
@@ -828,8 +920,11 @@ track('lobby_open');
       .eq('is_active', true)
       .in('asset_type', ['card_art', 'hero_banner']);
     if (!assets?.length) return;
+
+    // Build a lookup: hero_banner images keyed by game name (asset_key)
+    const heroBanners = {};
     for (const a of assets) {
-      if (a.asset_type === 'card_art') {
+      if (a.asset_type === 'card_art' && a.game_name === 'lobby') {
         const card = document.querySelector(`.ott-card[data-game="${a.asset_key}"] .ott-card__art`);
         if (card) {
           card.style.backgroundImage = `url(${a.url})`;
@@ -838,14 +933,40 @@ track('lobby_open');
           const emoji = card.querySelector('.ott-card__emoji');
           if (emoji) emoji.style.display = 'none';
         }
-      } else if (a.asset_type === 'hero_banner') {
-        const heroBg = document.querySelector('.ott-hero__bg');
-        if (heroBg) {
-          heroBg.style.backgroundImage = `url(${a.url})`;
-          heroBg.style.backgroundSize = 'cover';
-          heroBg.style.backgroundPosition = 'center';
-          heroBg.style.fontSize = '0';
-        }
+      } else if (a.asset_type === 'hero_banner' && a.game_name === 'lobby') {
+        // asset_key matches the game name e.g. 'flappy', 'chess' …
+        heroBanners[a.asset_key] = a.url;
+      }
+    }
+
+    // Patch applyHeroSlide to swap the hero background image per slide
+    if (Object.keys(heroBanners).length) {
+      const _origApply = applyHeroSlide;
+      // Override: after the original runs, set the bg image for that game
+      window._heroBanners = heroBanners;
+      const heroBg = document.querySelector('.ott-hero__bg');
+      if (heroBg) {
+        heroBg.style.backgroundSize = 'cover';
+        heroBg.style.backgroundPosition = 'center';
+      }
+      // Re-apply current slide now that we have images
+      const url = heroBanners[HERO_SLIDES[_heroIdx]?.game];
+      if (url && heroBg) {
+        heroBg.style.backgroundImage = `url(${url})`;
+        heroBg.style.fontSize = '0';
+      }
+      // Hook into future slide changes via MutationObserver on hero-title
+      const titleEl = document.getElementById('hero-title');
+      if (titleEl) {
+        new MutationObserver(() => {
+          const game = HERO_SLIDES[_heroIdx]?.game;
+          const imgUrl = heroBanners[game];
+          const bg = document.querySelector('.ott-hero__bg');
+          if (bg) {
+            if (imgUrl) { bg.style.backgroundImage = `url(${imgUrl})`; bg.style.fontSize = '0'; }
+            else { bg.style.backgroundImage = ''; bg.style.fontSize = ''; }
+          }
+        }).observe(titleEl, { childList: true, characterData: true, subtree: true });
       }
     }
   } catch (_) {}
