@@ -30,10 +30,9 @@ export class FlappyGame {
     this._onClick  = () => onFlap();
     this._onResize = () => this._resize();
 
-    window.addEventListener('keydown', this._onKey);
-    canvas.addEventListener('click',      this._onClick);
-    canvas.addEventListener('touchstart', this._onClick, { passive: true });
-    window.addEventListener('resize',     this._onResize);
+    window.addEventListener('keydown',   this._onKey);
+    canvas.addEventListener('pointerdown', this._onClick);
+    window.addEventListener('resize',    this._onResize);
 
     this._resize();
   }
@@ -63,8 +62,7 @@ export class FlappyGame {
     if (this._raf) cancelAnimationFrame(this._raf);
     window.removeEventListener('keydown',  this._onKey);
     window.removeEventListener('resize',   this._onResize);
-    this._canvas.removeEventListener('click',      this._onClick);
-    this._canvas.removeEventListener('touchstart', this._onClick);
+    this._canvas.removeEventListener('pointerdown', this._onClick);
   }
 
   updateState(pipes, players) {
