@@ -20,9 +20,6 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  /* iOS Safari: allow touch events to propagate into fixed/scrollable children */
-  -webkit-overflow-scrolling: touch;
   color: #fff;
 }
 
