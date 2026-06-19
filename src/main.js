@@ -665,7 +665,21 @@ document.querySelectorAll('.ott-card').forEach(card => {
     e.stopPropagation();
     showScreen(screen);
   });
+  // click covers desktop + Android; touchend covers iOS Safari/Chrome
   card.addEventListener('click', () => showScreen(screen));
+  let _tx = 0, _ty = 0;
+  card.addEventListener('touchstart', e => {
+    _tx = e.touches[0].clientX;
+    _ty = e.touches[0].clientY;
+  }, { passive: true });
+  card.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - _tx;
+    const dy = e.changedTouches[0].clientY - _ty;
+    if (Math.abs(dx) < 12 && Math.abs(dy) < 12) {
+      e.preventDefault(); // block the 300ms ghost click
+      showScreen(screen);
+    }
+  }, { passive: false });
 });
 
 // ─── Carousel scroll buttons (kept for back-compat, no-op if elements gone) ───
