@@ -661,11 +661,13 @@ const _CARD_SCREENS = {
 document.querySelectorAll('.ott-card').forEach(card => {
   const screen = _CARD_SCREENS[card.dataset.game];
   if (!screen) return;
-  card.querySelector('.ott-card__play')?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    showScreen(screen);
+  // pointerdown fires before the browser decides scroll vs tap,
+  // so it works even inside a horizontal overflow-x:auto container
+  let _px = 0, _py = 0;
+  card.addEventListener('pointerdown', e => { _px = e.clientX; _py = e.clientY; });
+  card.addEventListener('pointerup', e => {
+    if (Math.abs(e.clientX - _px) < 10 && Math.abs(e.clientY - _py) < 10) showScreen(screen);
   });
-  card.addEventListener('click', () => showScreen(screen));
 });
 
 // ─── Carousel scroll buttons (kept for back-compat, no-op if elements gone) ───
