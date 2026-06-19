@@ -784,6 +784,20 @@ input[type="text"].uppercase { text-transform: uppercase; letter-spacing: 4px; }
 @media (hover: hover) {
   .ott-card:hover .ott-card__hover { opacity: 1; pointer-events: auto; }
 }
+/* On touch devices show Play button always — overlay stays hidden */
+@media (hover: none) {
+  .ott-card__hover {
+    position: static; inset: unset;
+    background: none;
+    opacity: 1; pointer-events: auto;
+    flex-direction: row;
+    padding: .3rem .6rem .5rem;
+    gap: 0;
+    justify-content: stretch;
+  }
+  .ott-card__desc { display: none; }
+  .ott-card__play { font-size: .75rem; padding: .35rem .5rem; width: 100%; }
+}
 .ott-card__desc {
   font-size: .77rem; color: rgba(255,255,255,.7);
   text-align: center; line-height: 1.45; margin: 0;
