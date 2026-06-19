@@ -6,6 +6,10 @@ const CORS = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Newest first; falls back to the older GPT Image model if the account
+// doesn't have access to the default. (DALL-E was retired May 2026.)
+const IMAGE_MODELS = ['gpt-image-2', 'gpt-image-1'];
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
 
@@ -29,16 +33,28 @@ serve(async (req) => {
     const { prompt, game_name, asset_type, asset_key } = await req.json();
     if (!prompt) return new Response(JSON.stringify({ error: 'prompt required' }), { status: 400, headers: CORS });
 
-    // Call OpenAI DALL-E 3 (no response_format — default returns a URL)
-    const openaiRes = await fetch('https://api.openai.com/v1/images/generations', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${openaiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'dall-e-3', prompt, n: 1, size: '1024x1024', quality: 'standard' }),
-    });
-    const openaiData = await openaiRes.json();
-    if (!openaiRes.ok) throw new Error(openaiData.error?.message ?? 'OpenAI error');
+    // Call OpenAI GPT Image. No response_format (GPT image always returns b64_json).
+    // Try newest model, fall back to older one only on model-availability errors.
+    let openaiData: any = null;
+    let lastErr = 'OpenAI error';
+    for (const model of IMAGE_MODELS) {
+      const r = await fetch('https://api.openai.com/v1/images/generations', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${openaiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model, prompt, n: 1, size: '1024x1024' }),
+      });
+      const d = await r.json();
+      if (r.ok) { openaiData = d; break; }
+      lastErr = d.error?.message ?? 'OpenAI error';
+      // Only fall through to the next model when this one is unavailable;
+      // surface real errors (content policy, billing) immediately.
+      if (!/does not exist|not have access|must be verified|unsupported model/i.test(lastErr)) {
+        throw new Error(lastErr);
+      }
+    }
+    if (!openaiData) throw new Error(lastErr);
 
-    // Handle both b64_json and url response shapes
+    // GPT Image returns b64_json; keep a url fallback just in case
     const item = openaiData.data?.[0];
     let bytes: Uint8Array;
     if (item?.b64_json) {
