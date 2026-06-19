@@ -10,6 +10,7 @@ import GameConfig from './pages/GameConfig.jsx';
 import Players from './pages/Players.jsx';
 import Leaderboard from './pages/Leaderboard.jsx';
 import AdminUsers from './pages/AdminUsers.jsx';
+import ApiStatus from './pages/ApiStatus.jsx';
 
 export default function App() {
   const [session, setSession] = useState(null);
@@ -46,7 +47,7 @@ export default function App() {
     </div>
   );
 
-  const pages = { dashboard: Dashboard, analytics: Analytics, auditlog: AuditLog, assets: GameAssets, config: GameConfig, players: Players, leaderboard: Leaderboard, admins: AdminUsers };
+  const pages = { dashboard: Dashboard, analytics: Analytics, auditlog: AuditLog, assets: GameAssets, config: GameConfig, players: Players, leaderboard: Leaderboard, api: ApiStatus, admins: AdminUsers };
   const PageComponent = pages[page] || Dashboard;
 
   return (

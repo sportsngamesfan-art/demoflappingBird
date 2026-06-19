@@ -79,6 +79,7 @@ export default function GameAssets() {
   const [assets, setAssets] = useState([]);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState('');
+  const [lastCost, setLastCost] = useState(null);
   const [slotStatuses, setSlotStatuses] = useState({});
 
   const comboKey = `${game}/${assetType}/${assetKey}`;
@@ -124,7 +125,7 @@ export default function GameAssets() {
 
   async function handleGenerate() {
     if (!prompt.trim()) return setError('Enter a prompt first.');
-    setGenerating(true); setError('');
+    setGenerating(true); setError(''); setLastCost(null);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-image`, {
@@ -134,6 +135,7 @@ export default function GameAssets() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? 'Generation failed');
+      if (json.cost_usd != null) setLastCost(json.cost_usd);
       await loadAssets();
       await loadSlotStatuses();
     } catch (e) {
@@ -286,6 +288,11 @@ export default function GameAssets() {
         )}
         <style>{`@keyframes genProgress { from { width:0% } to { width:95% } }`}</style>
         {error && <p style={s.err}>{error}</p>}
+        {lastCost != null && (
+          <p style={{ color:'#a78bfa', fontSize:'.82rem', marginTop:'.5rem' }}>
+            Cost: <strong>${lastCost.toFixed(3)}</strong> (estimated)
+          </p>
+        )}
       </div>
 
       <h2 style={s.h2}>Generated Assets ({assets.length})</h2>

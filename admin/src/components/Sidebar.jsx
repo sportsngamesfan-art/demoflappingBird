@@ -9,6 +9,7 @@ const NAV = [
   { key:'config',      label:'Game Config',  icon:'⚙️' },
   { key:'players',     label:'Players',      icon:'👤' },
   { key:'leaderboard', label:'Leaderboard',  icon:'🏆' },
+  { key:'api',         label:'API Status',   icon:'🔌' },
   { key:'admins',      label:'Admin Users',  icon:'🔑', superadmin: true },
 ];
 

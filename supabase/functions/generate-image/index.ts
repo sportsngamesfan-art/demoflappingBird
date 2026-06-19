@@ -38,6 +38,8 @@ serve(async (req) => {
     // square (card art, piece sprites) → 1024×1024
     const landscapeTypes = ['hero_banner', 'background', 'carousel'];
     const size = landscapeTypes.includes(asset_type) ? '1536x1024' : '1024x1024';
+    // Estimated cost for gpt-image-2 low quality
+    const cost_usd = size === '1536x1024' ? 0.04 : 0.02;
 
     // Call OpenAI GPT Image. No response_format (GPT image always returns b64_json).
     // Try newest model, fall back to older one only on model-availability errors.
@@ -87,7 +89,7 @@ serve(async (req) => {
       game_name, asset_type, asset_key, url: publicUrl, prompt, is_active: false,
     }).select().single();
 
-    return new Response(JSON.stringify({ url: publicUrl, id: assetRow.id }), {
+    return new Response(JSON.stringify({ url: publicUrl, id: assetRow.id, cost_usd }), {
       headers: { ...CORS, 'Content-Type': 'application/json' },
     });
   } catch (e) {
