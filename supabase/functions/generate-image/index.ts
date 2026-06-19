@@ -41,7 +41,7 @@ serve(async (req) => {
       const r = await fetch('https://api.openai.com/v1/images/generations', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${openaiKey}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model, prompt, n: 1, size: '1024x1024' }),
+        body: JSON.stringify({ model, prompt, n: 1, size: '1024x1024', quality: 'low' }),
       });
       const d = await r.json();
       if (r.ok) { openaiData = d; break; }
