@@ -666,8 +666,6 @@ document.querySelectorAll('.ott-card').forEach(card => {
     _tx = e.touches[0].clientX;
     _ty = e.touches[0].clientY;
   }, { passive: true });
-  // touchend fires reliably on mobile even inside scroll containers
-  // passive:true means scroll is never blocked
   card.addEventListener('touchend', e => {
     const dx = e.changedTouches[0].clientX - _tx;
     const dy = e.changedTouches[0].clientY - _ty;
@@ -676,7 +674,6 @@ document.querySelectorAll('.ott-card').forEach(card => {
       showScreen(screen);
     }
   }, { passive: true });
-  // click handles desktop; skip on mobile to avoid ghost click after touchend
   card.addEventListener('click', () => {
     if (Date.now() - _lastTouch > 500) showScreen(screen);
   });
