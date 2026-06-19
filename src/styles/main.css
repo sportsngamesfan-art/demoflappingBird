@@ -538,7 +538,7 @@ input[type="text"].uppercase { text-transform: uppercase; letter-spacing: 4px; }
 #home-bg-canvas {
   position: fixed; inset: 0; z-index: 0; pointer-events: none;
 }
-/* OTT home screen breaks out of body flex entirely — fills viewport independently */
+/* OTT home screen: fixed container, NO overflow here — scroll lives in .ott-scroll-body */
 #screen-home {
   position: fixed;
   inset: 0;
@@ -546,10 +546,7 @@ input[type="text"].uppercase { text-transform: uppercase; letter-spacing: 4px; }
   flex-direction: column;
   align-items: stretch;
   justify-content: flex-start;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;
+  overflow: hidden;
   padding: 0;
 }
 /* Tag colours (shared by cards, hero tag, etc.) */
@@ -598,7 +595,11 @@ input[type="text"].uppercase { text-transform: uppercase; letter-spacing: 4px; }
 /* ── Scroll Body ── */
 .ott-scroll-body {
   flex: 1; display: flex; flex-direction: column; position: relative; z-index: 1;
-  min-height: 0; /* allow flex child to shrink below content size */
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
 }
 .ott-scroll-footer { height: 56px; }
 
