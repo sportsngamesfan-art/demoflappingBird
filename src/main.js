@@ -566,23 +566,48 @@ function startHeroRotation() {
   });
 }
 
-// ─── Friends Drawer ───────────────────────────────────────────────────────────
-function initDrawer() {
-  const toggle = document.getElementById('drawer-toggle');
-  const panel  = document.getElementById('drawer-panel');
+// ─── Chat FAB ─────────────────────────────────────────────────────────────────
+function initChat() {
+  const toggle = document.getElementById('chat-toggle');
+  const panel  = document.getElementById('chat-panel');
+  const closeBtn = document.getElementById('chat-close');
+  const input  = document.getElementById('chat-input');
+  const sendBtn = document.getElementById('chat-send');
+  const msgs   = document.getElementById('chat-messages');
   if (!toggle || !panel) return;
+
+  function openPanel() {
+    panel.classList.add('open');
+    toggle.setAttribute('aria-expanded', 'true');
+    msgs.scrollTop = msgs.scrollHeight;
+    setTimeout(() => input?.focus(), 220);
+  }
+  function closePanel() {
+    panel.classList.remove('open');
+    toggle.setAttribute('aria-expanded', 'false');
+  }
+
   toggle.addEventListener('click', (e) => {
     e.stopPropagation();
-    const isOpen = panel.classList.contains('open');
-    panel.classList.toggle('open', !isOpen);
-    toggle.setAttribute('aria-expanded', String(!isOpen));
+    panel.classList.contains('open') ? closePanel() : openPanel();
   });
+  closeBtn?.addEventListener('click', (e) => { e.stopPropagation(); closePanel(); });
   document.addEventListener('click', (e) => {
-    if (!e.target.closest('.ott-drawer')) {
-      panel.classList.remove('open');
-      toggle.setAttribute('aria-expanded', 'false');
-    }
+    if (!e.target.closest('.chat-fab')) closePanel();
   });
+
+  function sendMessage() {
+    const text = input.value.trim();
+    if (!text) return;
+    const msg = document.createElement('div');
+    msg.className = 'chat-msg chat-msg--self';
+    msg.innerHTML = `<span class="chat-msg__name">You</span><span class="chat-msg__bubble">${text.replace(/</g,'&lt;')}</span>`;
+    msgs.appendChild(msg);
+    msgs.scrollTop = msgs.scrollHeight;
+    input.value = '';
+  }
+  sendBtn?.addEventListener('click', sendMessage);
+  input?.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMessage(); });
 }
 
 function animateHomeEntrance() {
@@ -757,7 +782,7 @@ initHomeBg();
 startTicker();
 startLiveMatchWidget();
 startHeroRotation();
-initDrawer();
+initChat();
 
 // ─── 3D Lobby toggle ──────────────────────────────────────────────────────────
 let lobby3DActive = localStorage.getItem('lobbyMode') === '3d';

@@ -204,67 +204,44 @@
 
     </div><!-- end ott-scroll-body -->
 
-    <!-- Friends Drawer (floating FAB) -->
-    <div class="ott-drawer" id="ott-drawer">
-      <div class="ott-drawer__panel" id="drawer-panel">
-        <div class="ott-drawer__panel-header">
-          <span>Friends Online</span>
-          <span class="friends-count" id="friends-count">4</span>
+    <!-- Chat FAB -->
+    <div class="chat-fab" id="chat-fab">
+      <div class="chat-panel" id="chat-panel">
+        <div class="chat-panel__header">
+          <span class="chat-panel__title">💬 Game Chat</span>
+          <button class="chat-panel__close" id="chat-close" aria-label="Close chat">✕</button>
         </div>
-        <div class="friends-list" id="friends-list">
-          <div class="friend-item">
-            <span class="friend-dot playing"></span>
-            <div class="friend-info"><span class="friend-name">Emma</span><span class="friend-status">Playing Chess</span></div>
-          </div>
-          <div class="friend-item">
-            <span class="friend-dot playing"></span>
-            <div class="friend-info"><span class="friend-name">Riaan</span><span class="friend-status">In Flappy Bird</span></div>
-          </div>
-          <div class="friend-item">
-            <span class="friend-dot playing"></span>
-            <div class="friend-info"><span class="friend-name">Sofia</span><span class="friend-status">Playing Pac-Man</span></div>
-          </div>
-          <div class="friend-item">
-            <span class="friend-dot idle"></span>
-            <div class="friend-info"><span class="friend-name">James</span><span class="friend-status">Idle</span></div>
-          </div>
+        <div class="chat-messages" id="chat-messages">
+          <div class="chat-msg chat-msg--other"><span class="chat-msg__name">Emma</span><span class="chat-msg__bubble">Anyone up for Pac-Man? 👻</span></div>
+          <div class="chat-msg chat-msg--other"><span class="chat-msg__name">Riaan</span><span class="chat-msg__bubble">gg last round 🔥</span></div>
+          <div class="chat-msg chat-msg--other"><span class="chat-msg__name">Sofia</span><span class="chat-msg__bubble">chess room is open, join me!</span></div>
+          <div class="chat-msg chat-msg--other"><span class="chat-msg__name">James</span><span class="chat-msg__bubble">waiting in flappy lobby ✈️</span></div>
         </div>
-        <div class="ott-drawer__divider"></div>
-        <div class="ott-drawer__live-match">
-          <div class="ott-drawer__lm-header">
-            <span class="live-dot"></span>
-            <span class="ott-drawer__lm-title">Live Match</span>
-            <span class="live-badge">LIVE</span>
-          </div>
-          <div class="lm-game-name">♟️ Chess</div>
-          <div class="lm-players">
-            <span class="lm-player white-player">Ted</span>
-            <span class="lm-vs">vs</span>
-            <span class="lm-player black-player">Emma</span>
-          </div>
-          <div class="lm-status" id="lm-status">
-            <span class="lm-status-dot white"></span>
-            <span id="lm-status-text">White to move</span>
-            <span class="lm-move-count" id="lm-move-count">Move 7</span>
-          </div>
-          <div class="mini-board" id="mini-board"></div>
-          <div class="lm-actions">
-            <button class="btn btn-ghost lm-btn" id="btn-watch-match">👁 Watch</button>
-            <button class="btn btn-primary lm-btn" id="btn-join-queue">+ Join</button>
-          </div>
+        <div class="chat-input-row">
+          <input class="chat-input" id="chat-input" type="text" placeholder="Say something…" maxlength="120" />
+          <button class="chat-send-btn" id="chat-send" aria-label="Send">➤</button>
         </div>
-        <button class="btn btn-ghost" style="width:100%;font-size:.8rem">+ Invite Friends</button>
       </div>
-      <button class="ott-drawer__toggle" id="drawer-toggle" aria-expanded="false">
-        <span class="ott-drawer__toggle-icon">👥</span>
-        <span class="ott-drawer__toggle-count" id="drawer-friend-count">4</span>
-        <span class="ott-drawer__pulse"></span>
+      <button class="chat-fab__btn" id="chat-toggle" aria-expanded="false" aria-label="Open chat">
+        <span class="chat-fab__icon">💬</span>
+        <span class="chat-fab__pulse"></span>
       </button>
     </div>
 
     <!-- 3D lobby canvas (opt-in toggle, kept for compatibility) -->
     <button id="btn-lobby-toggle" class="btn btn-ghost hidden">🎮 3D View</button>
     <canvas id="lobby-canvas" class="hidden"></canvas>
+
+    <!-- Fixed Footer -->
+    <footer class="ott-footer">
+      <span class="ott-footer__copy">© 2025 Social Games</span>
+      <span class="ott-footer__sep">·</span>
+      <a class="ott-footer__link" href="#">Privacy</a>
+      <span class="ott-footer__sep">·</span>
+      <a class="ott-footer__link" href="#">Terms</a>
+      <span class="ott-footer__sep">·</span>
+      <a class="ott-footer__link" href="#">About</a>
+    </footer>
   </div>
 
   <!-- ── Flappy Bird Landing ───────────────────────────── -->
