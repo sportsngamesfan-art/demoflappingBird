@@ -1,5 +1,6 @@
 import { PacmanGame } from './PacmanGame.js';
 import { showScreen, submitScore, loadLeaderboard } from '../../core/shared.js';
+import { track } from '../../lib/analytics.js';
 import { registerGame, unregisterGame, updateGameHUD } from '../../nav.js';
 
 let pmName = '';
@@ -54,10 +55,13 @@ function startPacman(mode, theme) {
 
   showScreen('screen-pacman-game');
   const canvas = document.getElementById('pm-canvas');
+  const _pmStartTime = Date.now();
+  track('game_start', { game_name: 'pacman', player_name: pmName });
 
   pmGame = new PacmanGame(canvas, mode, async ({ score, level }) => {
     unregisterGame();
     pmGame = null;
+    track('game_end', { game_name: 'pacman', player_name: pmName, duration_ms: Date.now() - _pmStartTime, metadata: { score, level } });
 
     if (score > 0) {
       await submitScore({

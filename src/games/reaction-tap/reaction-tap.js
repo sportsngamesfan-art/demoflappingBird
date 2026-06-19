@@ -1,4 +1,5 @@
 import { showScreen, submitScore, loadLeaderboard } from '../../core/shared.js';
+import { track } from '../../lib/analytics.js';
 
 const ROUNDS = 5;
 const PENALTY_MS = 1000;
@@ -50,6 +51,7 @@ function startReactionGame() {
   rtFlashTime     = null;
   rtWaiting       = false;
   rtActive        = false;
+  track('game_start', { game_name: 'reaction', player_name: rtName });
 
   const arena = document.getElementById('rt-arena');
   arena.className = 'reaction-arena waiting';
@@ -142,6 +144,7 @@ function finishGame() {
   showScreen('screen-reaction-results');
 
   // Submit — lower score = better, so store as-is and leaderboard sorts ascending
+  track('game_end', { game_name: 'reaction', player_name: rtName, metadata: { score: avg } });
   submitScore({ player_name: rtName, score: avg, game_name: 'reaction-tap' });
 }
 

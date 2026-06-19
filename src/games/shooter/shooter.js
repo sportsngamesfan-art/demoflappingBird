@@ -1,4 +1,5 @@
 import { showScreen, submitScore, loadLeaderboard, supabase } from '../../core/shared.js';
+import { track } from '../../lib/analytics.js';
 import { ShooterGame } from './ShooterGame.js';
 
 const GAME_W      = 800;
@@ -72,6 +73,7 @@ function startSinglePlayer() {
   _launchGame();
 }
 
+let _shooterStartTime = 0;
 function _launchGame() {
   shCleanupGame();
   showScreen('screen-shooter-game');
@@ -80,6 +82,8 @@ function _launchGame() {
   shGame.start();
   initHostState();
   shHostState.gameLoop = setInterval(shHostTick, 1000 / 30);
+  _shooterStartTime = Date.now();
+  track('game_start', { game_name: 'shooter', player_name: shName });
 }
 
 // ── Multiplayer ───────────────────────────────────────────────────────────────
@@ -461,6 +465,7 @@ async function shHostEndGame() {
 
   shHostState = null;
 
+  track('game_end', { game_name: 'shooter', player_name: shName, duration_ms: Date.now() - _shooterStartTime, metadata: { results } });
   for (const r of results) {
     if (r.score > 0) await submitScore({ player_name: r.name, score: r.score, game_name: 'shooter' });
   }

@@ -1,5 +1,6 @@
 import { ChessGame } from './ChessGame.js';
 import { showScreen, submitScore, loadLeaderboard } from '../../core/shared.js';
+import { track } from '../../lib/analytics.js';
 import { registerGame, unregisterGame, updateGameHUD } from '../../nav.js';
 
 let chessGame = null;
@@ -25,11 +26,14 @@ function startChess() {
 
   showScreen('screen-chess-game');
   const canvas = document.getElementById('chess-canvas');
+  const _chessStartTime = Date.now();
+  track('game_start', { game_name: 'chess', player_name: p1 });
 
   chessGame = new ChessGame(canvas, { player1: p1, player2: p2 }, async ({ winner, reason, moves }) => {
     unregisterGame();
     const prevGame = chessGame;
     chessGame = null;
+    track('game_end', { game_name: 'chess', player_name: p1, duration_ms: Date.now() - _chessStartTime, metadata: { winner, reason, moves } });
 
     let winnerName, score1, score2;
     if (winner === 'draw') {

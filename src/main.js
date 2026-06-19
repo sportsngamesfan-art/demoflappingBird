@@ -1,5 +1,6 @@
 import { FlappyGame } from './games/flappy/FlappyGame.js';
 import { supabase, showScreen, genCode, hexColor, PLAYER_COLORS, RANK_MEDALS, submitScore } from './core/shared.js';
+import { track } from './lib/analytics.js';
 import { initReactionTap } from './games/reaction-tap/reaction-tap.js';
 import { initShooter } from './games/shooter/shooter.js';
 import { initPacman } from './games/pacman/pacman.js';
@@ -249,6 +250,7 @@ async function hostStartGame() {
   // Tell guests to start rendering
   const payload = { level, players: serializePlayers(players) };
   channel.send({ type: 'broadcast', event: 'game_start', payload });
+  track('game_start', { game_name: 'flappy', player_name: myName });
 
   // Host starts rendering immediately
   startRendering(payload);
@@ -318,6 +320,7 @@ async function hostEndGame() {
   const inserts = results.filter(r => r.score > 0)
     .map(r => ({ player_name: r.name, score: r.score, level, game_name: 'flappy' }));
   if (inserts.length) supabase.from('leaderboard').insert(inserts);
+  track('game_end', { game_name: 'flappy', player_name: myName, metadata: { level, results } });
 
   channel.send({ type: 'broadcast', event: 'game_over', payload: { results } });
 
@@ -661,21 +664,15 @@ const _CARD_SCREENS = {
 document.querySelectorAll('.ott-card').forEach(card => {
   const screen = _CARD_SCREENS[card.dataset.game];
   if (!screen) return;
-  let _tx = 0, _ty = 0, _lastTouch = 0;
-  card.addEventListener('touchstart', e => {
-    _tx = e.touches[0].clientX;
-    _ty = e.touches[0].clientY;
-  }, { passive: true });
-  card.addEventListener('touchend', e => {
-    const dx = e.changedTouches[0].clientX - _tx;
-    const dy = e.changedTouches[0].clientY - _ty;
-    if (Math.abs(dx) < 10 && Math.abs(dy) < 10) {
-      _lastTouch = Date.now();
+  // pointerdown fires before the browser decides scroll vs tap,
+  // so it works even inside a horizontal overflow-x:auto container
+  let _px = 0, _py = 0;
+  card.addEventListener('pointerdown', e => { _px = e.clientX; _py = e.clientY; });
+  card.addEventListener('pointerup', e => {
+    if (Math.abs(e.clientX - _px) < 10 && Math.abs(e.clientY - _py) < 10) {
+      track('card_click', { game_name: card.dataset.game });
       showScreen(screen);
     }
-  }, { passive: true });
-  card.addEventListener('click', () => {
-    if (Date.now() - _lastTouch > 500) showScreen(screen);
   });
 });
 
@@ -820,6 +817,7 @@ lobbyToggle?.addEventListener('click', () => {
 
 applyLobbyMode();
 showScreen('screen-home');
+track('lobby_open');
 requestAnimationFrame(() => {
   animateHomeEntrance();
   initRowNav();
