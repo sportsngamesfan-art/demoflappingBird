@@ -33,6 +33,12 @@ serve(async (req) => {
     const { prompt, game_name, asset_type, asset_key } = await req.json();
     if (!prompt) return new Response(JSON.stringify({ error: 'prompt required' }), { status: 400, headers: CORS });
 
+    // Pick dimensions based on asset type:
+    // landscape (hero banners, backgrounds, splash carousel) → 1536×1024
+    // square (card art, piece sprites) → 1024×1024
+    const landscapeTypes = ['hero_banner', 'background', 'carousel'];
+    const size = landscapeTypes.includes(asset_type) ? '1536x1024' : '1024x1024';
+
     // Call OpenAI GPT Image. No response_format (GPT image always returns b64_json).
     // Try newest model, fall back to older one only on model-availability errors.
     let openaiData: any = null;
@@ -41,7 +47,7 @@ serve(async (req) => {
       const r = await fetch('https://api.openai.com/v1/images/generations', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${openaiKey}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model, prompt, n: 1, size: '1024x1024', quality: 'low' }),
+        body: JSON.stringify({ model, prompt, n: 1, size, quality: 'low' }),
       });
       const d = await r.json();
       if (r.ok) { openaiData = d; break; }
