@@ -661,12 +661,24 @@ const _CARD_SCREENS = {
 document.querySelectorAll('.ott-card').forEach(card => {
   const screen = _CARD_SCREENS[card.dataset.game];
   if (!screen) return;
-  // pointerdown fires before the browser decides scroll vs tap,
-  // so it works even inside a horizontal overflow-x:auto container
-  let _px = 0, _py = 0;
-  card.addEventListener('pointerdown', e => { _px = e.clientX; _py = e.clientY; });
-  card.addEventListener('pointerup', e => {
-    if (Math.abs(e.clientX - _px) < 10 && Math.abs(e.clientY - _py) < 10) showScreen(screen);
+  let _tx = 0, _ty = 0, _lastTouch = 0;
+  card.addEventListener('touchstart', e => {
+    _tx = e.touches[0].clientX;
+    _ty = e.touches[0].clientY;
+  }, { passive: true });
+  // touchend fires reliably on mobile even inside scroll containers
+  // passive:true means scroll is never blocked
+  card.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - _tx;
+    const dy = e.changedTouches[0].clientY - _ty;
+    if (Math.abs(dx) < 10 && Math.abs(dy) < 10) {
+      _lastTouch = Date.now();
+      showScreen(screen);
+    }
+  }, { passive: true });
+  // click handles desktop; skip on mobile to avoid ghost click after touchend
+  card.addEventListener('click', () => {
+    if (Date.now() - _lastTouch > 500) showScreen(screen);
   });
 });
 
