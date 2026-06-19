@@ -29,17 +29,27 @@ serve(async (req) => {
     const { prompt, game_name, asset_type, asset_key } = await req.json();
     if (!prompt) return new Response(JSON.stringify({ error: 'prompt required' }), { status: 400, headers: CORS });
 
-    // Call OpenAI DALL-E 3
+    // Call OpenAI DALL-E 3 (no response_format — default returns a URL)
     const openaiRes = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${openaiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'dall-e-3', prompt, n: 1, size: '1024x1024', quality: 'standard', response_format: 'b64_json' }),
+      body: JSON.stringify({ model: 'dall-e-3', prompt, n: 1, size: '1024x1024', quality: 'standard' }),
     });
     const openaiData = await openaiRes.json();
     if (!openaiRes.ok) throw new Error(openaiData.error?.message ?? 'OpenAI error');
 
-    const b64 = openaiData.data[0].b64_json;
-    const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+    // Handle both b64_json and url response shapes
+    const item = openaiData.data?.[0];
+    let bytes: Uint8Array;
+    if (item?.b64_json) {
+      bytes = Uint8Array.from(atob(item.b64_json), c => c.charCodeAt(0));
+    } else if (item?.url) {
+      const imgRes = await fetch(item.url);
+      if (!imgRes.ok) throw new Error('Failed to download generated image');
+      bytes = new Uint8Array(await imgRes.arrayBuffer());
+    } else {
+      throw new Error('OpenAI returned no image');
+    }
 
     // Upload to Supabase Storage
     const fileName = `${game_name}/${asset_type}/${asset_key}_${Date.now()}.png`;
