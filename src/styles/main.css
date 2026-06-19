@@ -697,9 +697,8 @@ input[type="text"].uppercase { text-transform: uppercase; letter-spacing: 4px; }
 .ott-row__nav-btn:disabled { opacity: .25; pointer-events: none; }
 .ott-row__track {
   display: flex; gap: .75rem;
-  overflow-x: auto; scroll-snap-type: x mandatory;
+  overflow-x: auto; scroll-snap-type: x proximity;
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-x;
   padding-bottom: .4rem; scrollbar-width: none;
 }
 .ott-row__track::-webkit-scrollbar { display: none; }
@@ -717,6 +716,8 @@ input[type="text"].uppercase { text-transform: uppercase; letter-spacing: 4px; }
   border-radius: 14px; overflow: hidden; cursor: pointer;
   position: relative; display: flex; flex-direction: column;
   background: rgba(255,255,255,.06);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   border: 1.5px solid rgba(255,255,255,.1);
   transition: transform .22s, border-color .22s, box-shadow .22s;
 }
