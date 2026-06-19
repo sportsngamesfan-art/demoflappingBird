@@ -818,6 +818,38 @@ lobbyToggle?.addEventListener('click', () => {
 applyLobbyMode();
 showScreen('screen-home');
 track('lobby_open');
+
+// ─── Load active game assets from Supabase ────────────────────────────────────
+(async () => {
+  try {
+    const { data: assets } = await supabase
+      .from('game_assets')
+      .select('game_name, asset_type, asset_key, url')
+      .eq('is_active', true)
+      .in('asset_type', ['card_art', 'hero_banner']);
+    if (!assets?.length) return;
+    for (const a of assets) {
+      if (a.asset_type === 'card_art') {
+        const card = document.querySelector(`.ott-card[data-game="${a.asset_key}"] .ott-card__art`);
+        if (card) {
+          card.style.backgroundImage = `url(${a.url})`;
+          card.style.backgroundSize = 'cover';
+          card.style.backgroundPosition = 'center';
+          const emoji = card.querySelector('.ott-card__emoji');
+          if (emoji) emoji.style.display = 'none';
+        }
+      } else if (a.asset_type === 'hero_banner') {
+        const heroBg = document.querySelector('.ott-hero__bg');
+        if (heroBg) {
+          heroBg.style.backgroundImage = `url(${a.url})`;
+          heroBg.style.backgroundSize = 'cover';
+          heroBg.style.backgroundPosition = 'center';
+          heroBg.style.fontSize = '0';
+        }
+      }
+    }
+  } catch (_) {}
+})();
 requestAnimationFrame(() => {
   animateHomeEntrance();
   initRowNav();

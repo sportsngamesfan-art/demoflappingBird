@@ -168,11 +168,20 @@ export default function GameAssets() {
       </div>
 
       <div style={s.promptWrap}>
-        <div style={{ ...s.label, marginBottom:'.5rem' }}>Prompt (DALL-E 3)</div>
+        <div style={{ ...s.label, marginBottom:'.5rem' }}>Prompt (GPT Image 2)</div>
         <textarea style={s.textarea} value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="Enter image generation prompt…" />
         <button style={s.btn(generating)} onClick={handleGenerate} disabled={generating}>
-          {generating ? '⏳ Generating…' : '✨ Generate Image'}
+          {generating ? 'Generating…' : '✨ Generate Image'}
         </button>
+        {generating && (
+          <div style={{ marginTop:'.75rem', display:'flex', alignItems:'center', gap:'.75rem' }}>
+            <div style={{ width:'180px', height:'6px', background:'#1a1a2e', borderRadius:'3px', overflow:'hidden' }}>
+              <div style={{ height:'100%', background:'#7c3aed', borderRadius:'3px', animation:'genProgress 12s linear forwards' }} />
+            </div>
+            <span style={{ color:'#9999bb', fontSize:'.8rem' }}>This takes ~15 seconds…</span>
+          </div>
+        )}
+        <style>{`@keyframes genProgress { from { width:0% } to { width:95% } }`}</style>
         {error && <p style={s.err}>{error}</p>}
       </div>
 
@@ -180,7 +189,7 @@ export default function GameAssets() {
       <div style={s.grid}>
         {assets.map(a => (
           <div key={a.id} style={{ ...s.imgCard, border: a.is_active ? '1px solid #4ade80' : '1px solid #2a2a4a' }}>
-            <img src={a.url} alt={a.asset_key} style={s.img} loading="lazy" />
+            <img src={a.url} alt={a.asset_key} style={s.img} loading="lazy" decoding="async" />
             <div style={s.imgFooter}>
               {a.is_active ? <span style={s.activeBadge}>✓ Active</span> : (
                 <button onClick={() => handleActivate(a)} style={{ ...s.btn(false), padding:'.3rem .7rem', fontSize:'.8rem' }}>Activate</button>
