@@ -1027,11 +1027,9 @@ input[type="text"].uppercase { text-transform: uppercase; letter-spacing: 4px; }
 #screen-splash {
   background: #0f0f1a;
   min-height: 100vh;
-  display: flex;
   align-items: center;
   justify-content: center;
 }
-#screen-splash.hidden { display: none !important; }
 
 .splash-container {
   width: 100%;
