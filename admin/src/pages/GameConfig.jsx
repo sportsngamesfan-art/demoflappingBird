@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase.js';
 import { log } from '../lib/audit.js';
 
-const GAMES = ['flappy', 'shooter', 'pacman', 'chess', 'reaction'];
+// Chess omitted: it has no runtime-configurable parameters (no timer feature).
+const GAMES = ['flappy', 'shooter', 'pacman', 'reaction'];
 
 const DEFAULT_CONFIGS = {
   flappy: {
@@ -11,21 +12,16 @@ const DEFAULT_CONFIGS = {
     flapForce: -8.5,
   },
   shooter: {
-    playerSpeed: 180,
-    jumpForce: -420,
-    gravity: 900,
-    bulletSpeed: 500,
-    enemySpeedBase: 60,
+    gravity: 0.55,
+    jumpForce: 10.5,
+    playerSpeed: 3.5,
+    bulletSpeed: 9,
+    camSpeed: 0.8,
   },
   pacman: {
-    themes: ['classic', 'neon', 'fire'],
     pacmanSpeedBase: 5,
     frightenDuration: 8,
     extraLifeScore: 10000,
-  },
-  chess: {
-    timerEnabled: false,
-    timerSeconds: 300,
   },
   reaction: {
     rounds: 5,

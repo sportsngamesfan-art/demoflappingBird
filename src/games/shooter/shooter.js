@@ -1,20 +1,22 @@
 import { showScreen, submitScore, loadLeaderboard, supabase } from '../../core/shared.js';
 import { track } from '../../lib/analytics.js';
+import { loadGameConfig } from '../../lib/gameConfig.js';
 import { ShooterGame } from './ShooterGame.js';
 
 const GAME_W      = 800;
 const GAME_H      = 380;
 const GROUND_Y    = 310;   // canvas-Y of ground surface (feet land here)
-const GRAVITY     = 0.55;
-const JUMP_FORCE  = 10.5;  // applied as p.vy = -JUMP_FORCE
-const PLAYER_SPD  = 3.5;
+// Physics constants — overridable from the live game_configs table (admin).
+let GRAVITY       = 0.55;
+let JUMP_FORCE    = 10.5;  // applied as p.vy = -JUMP_FORCE
+let PLAYER_SPD    = 3.5;
 const PLAYER_HW   = 12;    // half-width for collision
 const PLAYER_H    = 48;    // total height (used for bullet spawn offset)
 const ENEMY_HW    = 13;
 const ENEMY_H     = 36;
-const BULLET_SPD  = 9;
+let BULLET_SPD    = 9;
 const MAX_HEALTH  = 3;
-const CAM_SPD     = 0.8;
+let CAM_SPD       = 0.8;
 const COLORS      = ['#FFD700', '#FF4455'];
 
 let shName        = '';
@@ -27,6 +29,15 @@ let shLobbyPlayers = {};
 
 export function initShooter(myId) {
   shMyId = myId;
+
+  // Apply live config overrides (falls back to hardcoded defaults on failure)
+  loadGameConfig('shooter').then(cfg => {
+    if (cfg.gravity     != null) GRAVITY    = cfg.gravity;
+    if (cfg.jumpForce   != null) JUMP_FORCE = cfg.jumpForce;
+    if (cfg.playerSpeed != null) PLAYER_SPD = cfg.playerSpeed;
+    if (cfg.bulletSpeed != null) BULLET_SPD = cfg.bulletSpeed;
+    if (cfg.camSpeed    != null) CAM_SPD    = cfg.camSpeed;
+  });
 
   document.getElementById('btn-sh-solo').addEventListener('click', () => {
     shName = document.getElementById('sh-name').value.trim();

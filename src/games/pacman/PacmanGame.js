@@ -41,13 +41,19 @@ const FRUIT_SPAWN_2 = 170;
 const FRUIT_DURATION = 9; // seconds
 
 export class PacmanGame {
-  constructor(canvas, mode, onEnd, theme = 'classic') {
+  constructor(canvas, mode, onEnd, theme = 'classic', config = {}) {
     this._canvas = canvas;
     this._ctx = canvas.getContext('2d');
     this._mode = mode;      // 'classic' | 'endless' | 'timeattack'
     this._onEnd = onEnd;    // callback({ score, level })
     this._theme = THEMES[theme] || THEMES.classic;
     this._audio = new PacmanAudio();
+
+    // Live config overrides (admin game_configs); fall back to module constants.
+    // pacmanSpeedBase is expressed in tiles/sec, so multiply by CELL for px/sec.
+    this._speedBase  = config.pacmanSpeedBase != null ? CELL * config.pacmanSpeedBase : PACMAN_SPEED_BASE;
+    this._frightenDur = config.frightenDuration != null ? config.frightenDuration : FRIGHTEN_DURATION;
+    this._extraLife   = config.extraLifeScore != null ? config.extraLifeScore : EXTRA_LIFE_SCORE;
 
     this._raf = null;
     this._keys = {};
@@ -113,7 +119,7 @@ export class PacmanGame {
       x: sc.x, y: sc.y,
       dir: DIR.LEFT,
       nextDir: DIR.LEFT,
-      speed: PACMAN_SPEED_BASE * (1 + (this._level - 1) * 0.05),
+      speed: this._speedBase * (1 + (this._level - 1) * 0.05),
       alive: true,
       mouthT: 0,
       _snapCol: -1, _snapRow: -1, // tile where last direction decision was made
@@ -274,7 +280,7 @@ export class PacmanGame {
       this._score += 50;
       this._audio.playPower();
       this._ghostChain = 0;
-      this._ghosts.forEach(g => g.frighten(FRIGHTEN_DURATION));
+      this._ghosts.forEach(g => g.frighten(this._frightenDur));
       this._spawnPowerParticles(pm.x, pm.y);
     }
 
@@ -283,7 +289,7 @@ export class PacmanGame {
   }
 
   _checkExtraLife() {
-    if (!this._extraLifeGiven && this._score >= EXTRA_LIFE_SCORE) {
+    if (!this._extraLifeGiven && this._score >= this._extraLife) {
       this._extraLifeGiven = true;
       this._lives++;
       this._audio.playExtraLife();

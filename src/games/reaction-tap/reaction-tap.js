@@ -1,10 +1,12 @@
 import { showScreen, submitScore, loadLeaderboard } from '../../core/shared.js';
 import { track } from '../../lib/analytics.js';
+import { loadGameConfig } from '../../lib/gameConfig.js';
 
-const ROUNDS = 5;
-const PENALTY_MS = 1000;
-const MIN_DELAY  = 1000;
-const MAX_DELAY  = 4000;
+// Overridable from the live game_configs table (admin); values below are fallbacks.
+let ROUNDS = 5;
+let PENALTY_MS = 1000;
+let MIN_DELAY  = 1000;
+let MAX_DELAY  = 4000;
 
 let rtName        = '';
 let rtRounds      = [];
@@ -18,6 +20,14 @@ let rtKeyBound    = null;
 
 // ─── Screens ──────────────────────────────────────────────────────────────────
 export function initReactionTap() {
+  // Apply live config overrides (falls back to hardcoded defaults on failure)
+  loadGameConfig('reaction').then(cfg => {
+    if (cfg.rounds     != null) ROUNDS     = cfg.rounds;
+    if (cfg.penaltyMs  != null) PENALTY_MS = cfg.penaltyMs;
+    if (cfg.minDelayMs != null) MIN_DELAY  = cfg.minDelayMs;
+    if (cfg.maxDelayMs != null) MAX_DELAY  = cfg.maxDelayMs;
+  });
+
   document.getElementById('btn-rt-play').addEventListener('click', () => {
     rtName = document.getElementById('rt-name').value.trim();
     if (!rtName) return setRtError('Enter your name first.');

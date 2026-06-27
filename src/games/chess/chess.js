@@ -4,13 +4,19 @@ import { track } from '../../lib/analytics.js';
 import { registerGame, unregisterGame, updateGameHUD } from '../../nav.js';
 
 let chessGame = null;
+let chessStartTime = 0; // for exit-safe game_end tracking
+let chessP1 = '';
 
 export function initChess() {
   document.getElementById('btn-chess-play').addEventListener('click', startChess);
   document.getElementById('btn-chess-lb-show').addEventListener('click', loadChessLeaderboard);
   document.getElementById('btn-chess-lb-back').addEventListener('click', () => showScreen('screen-chess-landing'));
   document.getElementById('btn-chess-home').addEventListener('click', () => {
-    if (chessGame) { chessGame.destroy(); chessGame = null; }
+    if (chessGame) {
+      // Quit mid-game: record a game_end so analytics aren't left dangling
+      track('game_end', { game_name: 'chess', player_name: chessP1, duration_ms: Date.now() - chessStartTime, metadata: { quit: true } });
+      chessGame.destroy(); chessGame = null;
+    }
     showScreen('screen-home');
   });
   document.getElementById('btn-chess-play-again').addEventListener('click', startChess);
@@ -26,14 +32,15 @@ function startChess() {
 
   showScreen('screen-chess-game');
   const canvas = document.getElementById('chess-canvas');
-  const _chessStartTime = Date.now();
+  chessStartTime = Date.now();
+  chessP1 = p1;
   track('game_start', { game_name: 'chess', player_name: p1 });
 
   chessGame = new ChessGame(canvas, { player1: p1, player2: p2 }, async ({ winner, reason, moves }) => {
     unregisterGame();
     const prevGame = chessGame;
     chessGame = null;
-    track('game_end', { game_name: 'chess', player_name: p1, duration_ms: Date.now() - _chessStartTime, metadata: { winner, reason, moves } });
+    track('game_end', { game_name: 'chess', player_name: p1, duration_ms: Date.now() - chessStartTime, metadata: { winner, reason, moves } });
 
     let winnerName, score1, score2;
     if (winner === 'draw') {

@@ -1,14 +1,20 @@
 import { PacmanGame } from './PacmanGame.js';
 import { showScreen, submitScore, loadLeaderboard } from '../../core/shared.js';
 import { track } from '../../lib/analytics.js';
+import { loadGameConfig } from '../../lib/gameConfig.js';
 import { registerGame, unregisterGame, updateGameHUD } from '../../nav.js';
 
 let pmName = '';
 let pmGame = null;
 let pmMode = 'classic';
 let pmTheme = 'classic';
+let pmConfig = {};  // live overrides from game_configs (admin); empty = defaults
+let pmStartTime = 0; // set when a game starts; used for exit-safe game_end tracking
 
 export function initPacman() {
+  // Apply live config overrides (falls back to hardcoded defaults on failure)
+  loadGameConfig('pacman').then(cfg => { pmConfig = cfg || {}; });
+
   // Mode picker
   document.querySelectorAll('[data-pm-mode]').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -32,7 +38,11 @@ export function initPacman() {
   document.getElementById('btn-pacman-lb-show').addEventListener('click', loadPacmanLeaderboard);
   document.getElementById('btn-pacman-lb-back').addEventListener('click', () => showScreen('screen-pacman-landing'));
   document.getElementById('btn-pacman-home').addEventListener('click', () => {
-    if (pmGame) { pmGame.destroy(); pmGame = null; }
+    if (pmGame) {
+      // Quit mid-game: record a game_end so analytics aren't left dangling
+      track('game_end', { game_name: 'pacman', player_name: pmName, duration_ms: Date.now() - pmStartTime, metadata: { quit: true } });
+      pmGame.destroy(); pmGame = null;
+    }
     showScreen('screen-home');
   });
   document.getElementById('btn-pacman-play-again').addEventListener('click', () => {
@@ -55,13 +65,13 @@ function startPacman(mode, theme) {
 
   showScreen('screen-pacman-game');
   const canvas = document.getElementById('pm-canvas');
-  const _pmStartTime = Date.now();
+  pmStartTime = Date.now();
   track('game_start', { game_name: 'pacman', player_name: pmName });
 
   pmGame = new PacmanGame(canvas, mode, async ({ score, level }) => {
     unregisterGame();
     pmGame = null;
-    track('game_end', { game_name: 'pacman', player_name: pmName, duration_ms: Date.now() - _pmStartTime, metadata: { score, level } });
+    track('game_end', { game_name: 'pacman', player_name: pmName, duration_ms: Date.now() - pmStartTime, metadata: { score, level } });
 
     if (score > 0) {
       await submitScore({
@@ -77,7 +87,7 @@ function startPacman(mode, theme) {
     document.getElementById('pm-gameover-mode').textContent =
       { classic: 'Classic', endless: 'Endless', timeattack: 'Time Attack' }[mode];
     showScreen('screen-pacman-gameover');
-  }, theme);
+  }, theme, pmConfig);
 
   registerGame(pmGame);
   updateGameHUD({ name: pmName, score: 0 });
