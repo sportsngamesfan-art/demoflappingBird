@@ -9,16 +9,20 @@ import { initHomeBg } from './home-bg.js';
 import { gsap } from 'gsap';
 import { initNav, updateGameHUD } from './nav.js';
 import { initLobby3D, destroyLobby3D } from './lobby3d.js';
+import { loadGameConfig } from './lib/gameConfig.js';
 
 // ─── Physics constants ────────────────────────────────────────────────────────
-const GRAVITY     = 0.45;
-const FLAP_FORCE  = -8.5;
+// GRAVITY / FLAP_FORCE / LEVELS are overridable from the live game_configs
+// table (admin panel) via loadGameConfig('flappy') at startup; the values below
+// are the hardcoded fallbacks used until/unless the DB provides overrides.
+let GRAVITY       = 0.45;
+let FLAP_FORCE    = -8.5;
 const BIRD_RADIUS = 17;
 const CANVAS_W    = 800;
 const CANVAS_H    = 600;
 const PIPE_WIDTH  = 60;
 
-const LEVELS = {
+let LEVELS = {
   easy:   { pipeSpeed: 2.5, pipeGap: 200, pipeInterval: 2200 },
   medium: { pipeSpeed: 3.5, pipeGap: 160, pipeInterval: 1800 },
   hard:   { pipeSpeed: 5.0, pipeGap: 115, pipeInterval: 1400 },
@@ -617,6 +621,23 @@ function animateHomeEntrance() {
   // CSS fadeIn on .screen handles the entrance — no GSAP opacity overrides here
 }
 
+// ─── Player name (shared from splash) ─────────────────────────────────────────
+// Prefill every game's name input with the splash-entered name so the user
+// only types it once. Each game still lets them override before playing.
+function prefillNameInputs(name) {
+  if (!name) return;
+  ['landing-name', 'rt-name', 'sh-name', 'pacman-name', 'chess-name-white'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !el.value) el.value = name;
+  });
+}
+
+// On load, restore any name saved from the splash page
+(() => {
+  const saved = sessionStorage.getItem('playerName');
+  if (saved) { myName = saved; prefillNameInputs(saved); }
+})();
+
 // ─── Event listeners ──────────────────────────────────────────────────────────
 document.getElementById('btn-join-show').addEventListener('click', () =>
   document.getElementById('join-form').classList.toggle('hidden'));
@@ -859,7 +880,11 @@ function initSplash() {
   document.getElementById('splash-form')?.addEventListener('submit', (e) => {
     e.preventDefault();
     const name = document.getElementById('player-name-input').value.trim();
-    if (name) sessionStorage.setItem('playerName', name);
+    if (name) {
+      sessionStorage.setItem('playerName', name);
+      myName = name;
+      prefillNameInputs(name);
+    }
     clearInterval(rotationTimer);
     showScreen('screen-home');
   });
@@ -910,6 +935,14 @@ applyLobbyMode();
 initSplash();
 showScreen('screen-splash');
 track('lobby_open');
+
+// ─── Load live Flappy config from Supabase (overrides hardcoded defaults) ─────
+(async () => {
+  const cfg = await loadGameConfig('flappy');
+  if (cfg.levels)    LEVELS     = cfg.levels;
+  if (cfg.gravity   != null) GRAVITY    = cfg.gravity;
+  if (cfg.flapForce != null) FLAP_FORCE = cfg.flapForce;
+})();
 
 // ─── Load active game assets from Supabase ────────────────────────────────────
 (async () => {
